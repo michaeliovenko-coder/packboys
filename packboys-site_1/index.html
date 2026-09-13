@@ -1,0 +1,2704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Shared TCG restock intel for the Louisville crew.">
+<meta name="theme-color" content="#0E1215" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EEF0F2" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pack Boys">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>:root{color-scheme:light dark}html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="supabase.js"></script>
+<script src="config.js"></script>
+<title>Pack Boys Louisville</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#EEF0F2; --surface:#FFFFFF; --surface2:#E3E7EA; --sunk:#DCE1E5;
+  --line:#CBD2D8; --line-soft:#DFE4E9;
+  --text:#13181B; --text-2:#3C464D; --muted:#6A757D;
+  --accent:#9A5A03; --accent-ink:#FFFFFF; --accent-wash:#F6E7CE;
+  --hit:#136E3F; --hit-wash:#D6EEE0;
+  --stock:#1F5E96; --stock-wash:#D8E7F5;
+  --empty:#7A828A; --empty-wash:#E2E6E9;
+  --locked:#8A4A12; --locked-wash:#F3E3D2;
+  --shadow:0 1px 2px rgba(16,24,32,.07), 0 8px 24px -14px rgba(16,24,32,.28);
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1215; --surface:#171C20; --surface2:#1F262B; --sunk:#12171A;
+    --line:#2B343A; --line-soft:#232B31;
+    --text:#E7ECEF; --text-2:#B6C0C7; --muted:#828E97;
+    --accent:#F0A93C; --accent-ink:#17120A; --accent-wash:#33260F;
+    --hit:#4FD08A; --hit-wash:#123024;
+    --stock:#6FB4F0; --stock-wash:#122436;
+    --empty:#7E8A93; --empty-wash:#1E252A;
+    --locked:#E09A5E; --locked-wash:#2E2114;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1215; --surface:#171C20; --surface2:#1F262B; --sunk:#12171A;
+  --line:#2B343A; --line-soft:#232B31;
+  --text:#E7ECEF; --text-2:#B6C0C7; --muted:#828E97;
+  --accent:#F0A93C; --accent-ink:#17120A; --accent-wash:#33260F;
+  --hit:#4FD08A; --hit-wash:#123024;
+  --stock:#6FB4F0; --stock-wash:#122436;
+  --empty:#7E8A93; --empty-wash:#1E252A;
+  --locked:#E09A5E; --locked-wash:#2E2114;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0; text-wrap:balance; font-weight:600}
+p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer}
+input,select,textarea{font:inherit; color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important; transition-duration:.001ms!important}}
+
+
+#gate{
+  position:fixed; inset:0; z-index:200; background:var(--ground);
+  display:flex; align-items:center; justify-content:center; padding:24px 16px;
+}
+body.gated{overflow:hidden}
+.gatebox{
+  width:100%; max-width:400px; background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:28px 26px; box-shadow:var(--shadow); text-align:center;
+}
+.gatebox .mark{display:flex; margin-bottom:18px}
+.gatelede{color:var(--text-2); font-size:14.5px; margin:0 0 16px; text-wrap:balance}
+.gatemsg{color:var(--muted); font-size:12.8px; margin:11px 0 0; min-height:1.2em}
+#siForm,#rdForm{display:flex; flex-direction:column; gap:9px}
+#rdForm input{text-align:center; text-transform:uppercase; letter-spacing:.1em;
+  font-family:"IBM Plex Mono",monospace}
+#rdForm .btn{justify-content:center; padding:11px}
+.codebox{
+  font-family:"IBM Plex Mono",monospace; font-size:21px; font-weight:600; letter-spacing:.08em;
+  text-align:center; padding:15px 10px; border-radius:10px; border:1px dashed var(--accent);
+  background:var(--accent-wash); color:var(--accent); word-break:break-all;
+}
+.codelist{display:flex; flex-direction:column; gap:6px}
+.coderow{
+  display:flex; align-items:center; gap:10px; padding:8px 11px; border:1px solid var(--line);
+  border-radius:8px; background:var(--sunk); font-size:13px;
+}
+.coderow code{font-family:"IBM Plex Mono",monospace; font-size:13px; flex:1; min-width:0}
+.coderow .used{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); white-space:nowrap}
+.coderow.spent{opacity:.5}
+#siForm input{text-align:center}
+#siForm .btn{justify-content:center; padding:11px}
+
+.shell{max-width:1120px; margin:0 auto; padding-inline:16px; padding-block:0 72px}
+
+/* ---------- header ---------- */
+.top{
+  position:sticky; top:0; z-index:40; background:var(--ground);
+  border-bottom:1px solid var(--line-soft);
+}
+.top-in{max-width:1120px; margin:0 auto; padding:14px 16px 0}
+.brandrow{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap}
+.mark{
+  font-family:Oswald,"IBM Plex Sans",sans-serif; font-weight:600;
+  font-size:clamp(24px,4.4vw,32px); letter-spacing:.055em; text-transform:uppercase;
+  line-height:1; display:flex; align-items:baseline; gap:.4em;
+}
+.mark em{font-style:normal; color:var(--accent)}
+.brandsub{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted); padding-bottom:2px;
+}
+.whoami{margin-left:auto; display:flex; align-items:center; gap:8px; padding-bottom:2px}
+.avatar{
+  width:26px; height:26px; border-radius:50%; display:grid; place-items:center;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; color:#0c0f11;
+  flex:none;
+}
+.linkbtn{
+  background:none; border:none; padding:2px 4px; font-size:13px; color:var(--muted);
+  text-decoration:underline; text-underline-offset:3px;
+}
+.linkbtn:hover{color:var(--text)}
+
+.tabs{display:flex; gap:2px; margin-top:12px; overflow-x:auto; scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  background:none; border:none; border-bottom:2px solid transparent;
+  padding:8px 12px 9px; white-space:nowrap; color:var(--muted);
+  font-family:Oswald,sans-serif; font-size:14px; letter-spacing:.09em; text-transform:uppercase;
+}
+.tab:hover{color:var(--text-2)}
+.tab[aria-selected="true"]{color:var(--text); border-bottom-color:var(--accent)}
+.tab .cnt{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); margin-left:5px}
+
+/* ---------- now strip ---------- */
+.now{
+  display:flex; gap:0; flex-wrap:wrap; align-items:stretch;
+  border:1px solid var(--line); border-radius:var(--radius); background:var(--surface);
+  margin-top:18px; overflow:hidden; box-shadow:var(--shadow);
+}
+.now-clock{
+  padding:12px 16px; background:var(--surface2); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; justify-content:center; min-width:150px;
+}
+.now-clock .d{font-family:Oswald,sans-serif; text-transform:uppercase; letter-spacing:.08em; font-size:17px}
+.now-clock .b{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted); letter-spacing:.05em}
+.now-body{padding:11px 16px; flex:1 1 320px; min-width:0; display:flex; flex-direction:column; gap:6px; justify-content:center}
+.now-body .lede{font-size:13.5px; color:var(--text-2)}
+.picks{display:flex; gap:6px; flex-wrap:wrap}
+.pick{
+  display:inline-flex; align-items:baseline; gap:7px; padding:4px 9px;
+  border:1px solid var(--line); border-radius:999px; background:var(--sunk); font-size:13px;
+}
+.pick b{font-weight:600}
+.pick span{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted)}
+.now-live{
+  padding:11px 16px; border-left:1px solid var(--line); flex:0 1 250px; min-width:190px;
+  display:flex; flex-direction:column; gap:6px; justify-content:center;
+}
+.lbl{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.peers{display:flex; gap:5px; flex-wrap:wrap; align-items:center}
+.peerchip{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; background:var(--sunk); border:1px solid var(--line); border-radius:999px; padding:2px 9px 2px 3px}
+.peerchip .avatar{width:19px; height:19px; font-size:9px}
+.dim{color:var(--muted); font-size:12.5px}
+
+/* ---------- home ---------- */
+.hero{
+  display:flex; gap:0; flex-wrap:wrap; margin-top:16px; overflow:hidden;
+  border:1px solid var(--line); border-radius:var(--radius); background:var(--surface);
+  box-shadow:var(--shadow);
+}
+.hero-main{padding:20px 22px; flex:1 1 340px; min-width:0; display:flex; flex-direction:column; gap:9px}
+.hero-main h1{
+  font-family:Oswald,sans-serif; font-size:clamp(26px,4.6vw,36px); letter-spacing:.04em;
+  text-transform:uppercase; font-weight:600; line-height:1.05;
+}
+.hero-main p{color:var(--text-2); font-size:14.5px; max-width:54ch}
+.hero-side{
+  flex:0 1 290px; min-width:210px; padding:18px 20px; background:var(--surface2);
+  border-left:1px solid var(--line); display:flex; flex-direction:column; gap:12px; justify-content:center;
+}
+@media (max-width:700px){ .hero-side{border-left:none; border-top:1px solid var(--line); flex-basis:100%} }
+.stat{display:flex; align-items:baseline; gap:9px}
+.stat b{
+  font-family:"IBM Plex Mono",monospace; font-size:24px; font-weight:600; line-height:1;
+  font-variant-numeric:tabular-nums; min-width:2.2em; text-align:right;
+}
+.stat span{font-size:13px; color:var(--muted); line-height:1.25}
+
+.qgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px}
+.qcard{
+  border:1px solid var(--line); border-radius:9px; padding:13px 14px; background:var(--sunk);
+  display:flex; flex-direction:column; gap:7px;
+}
+.qcard h4{font-family:Oswald,sans-serif; font-size:14.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:500}
+.qcard p{font-size:13.2px; color:var(--text-2)}
+.qstatus{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+  padding:2px 8px; border-radius:999px; align-self:flex-start;
+  background:var(--empty-wash); color:var(--empty);
+}
+.qstatus.live{background:var(--hit-wash); color:var(--hit)}
+.qstatus.thin{background:var(--accent-wash); color:var(--accent)}
+.qcard .btnrow{margin-top:auto; padding-top:4px}
+
+/* ---------- generic panels ---------- */
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.panel-h{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:12px 16px; border-bottom:1px solid var(--line-soft);
+}
+.panel-h h2{font-family:Oswald,sans-serif; font-size:16px; letter-spacing:.07em; text-transform:uppercase; font-weight:500}
+.panel-h .spacer{margin-left:auto}
+.panel-b{padding:16px}
+.grid2{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:16px; margin-top:16px; align-items:start}
+@media (max-width:860px){ .grid2{grid-template-columns:1fr} }
+section[hidden]{display:none!important}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:1px solid var(--line); background:var(--surface2); color:var(--text);
+  padding:7px 13px; border-radius:7px; font-size:13.5px; font-weight:500;
+  display:inline-flex; align-items:center; gap:7px; transition:background .12s, border-color .12s;
+}
+.btn:hover{background:var(--sunk); border-color:var(--muted)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+.btn.primary:hover{filter:brightness(1.07); background:var(--accent)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:4px 9px; font-size:12.5px; border-radius:6px}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btnrow{display:flex; gap:8px; flex-wrap:wrap}
+
+.field{display:flex; flex-direction:column; gap:5px; min-width:0}
+.field > label{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+input[type=text],input[type=search],input[type=datetime-local],input[type=number],select,textarea{
+  background:var(--sunk); border:1px solid var(--line); border-radius:7px;
+  padding:8px 10px; width:100%; font-size:14px;
+}
+textarea{resize:vertical; min-height:60px; font-family:inherit}
+.row{display:flex; gap:10px; flex-wrap:wrap}
+.row > *{flex:1 1 160px}
+
+/* ---------- outcome picker ---------- */
+.outcomes{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+@media (max-width:520px){ .outcomes{grid-template-columns:repeat(2,1fr)} }
+.oc{
+  border:1px solid var(--line); background:var(--sunk); border-radius:8px;
+  padding:9px 6px; display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center;
+}
+.oc .k{font-family:Oswald,sans-serif; font-size:13.5px; letter-spacing:.06em; text-transform:uppercase}
+.oc .s{font-size:10.5px; color:var(--muted); line-height:1.3}
+.oc[aria-pressed="true"]{border-width:1px; border-color:currentColor}
+.oc[data-o="score"][aria-pressed="true"]{background:var(--hit-wash); color:var(--hit)}
+.oc[data-o="stock"][aria-pressed="true"]{background:var(--stock-wash); color:var(--stock)}
+.oc[data-o="empty"][aria-pressed="true"]{background:var(--empty-wash); color:var(--empty)}
+.oc[data-o="locked"][aria-pressed="true"]{background:var(--locked-wash); color:var(--locked)}
+.oc[aria-pressed="true"] .s{color:inherit; opacity:.8}
+
+.chips{display:flex; gap:6px; flex-wrap:wrap}
+.chip{
+  border:1px solid var(--line); background:var(--sunk); border-radius:999px;
+  padding:4px 11px; font-size:12.5px;
+}
+.chip[aria-pressed="true"]{background:var(--accent-wash); border-color:var(--accent); color:var(--accent); font-weight:600}
+
+/* ---------- store list ---------- */
+.storelist{display:flex; flex-direction:column; gap:0; max-height:min(58vh,520px); overflow:auto}
+.srow{
+  display:flex; align-items:center; gap:11px; padding:9px 4px;
+  border-bottom:1px solid var(--line-soft); text-align:left; width:100%;
+  background:none; border-left:none; border-right:none; border-top:none;
+}
+.srow:last-child{border-bottom:none}
+.srow:hover{background:var(--sunk)}
+.srow[aria-pressed="true"]{background:var(--accent-wash)}
+.flag{
+  width:34px; height:34px; border-radius:8px; flex:none; display:grid; place-items:center;
+  font-family:Oswald,sans-serif; font-size:12px; letter-spacing:.02em; font-weight:600;
+  color:#fff; text-transform:uppercase;
+}
+.sname{font-weight:600; font-size:14px; line-height:1.25}
+.saddr{font-size:12px; color:var(--muted); line-height:1.3}
+.opens{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em;
+  color:var(--accent); white-space:nowrap;
+}
+.opensbadge{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; flex:none;
+  color:var(--accent); background:var(--accent-wash); border-radius:5px; padding:2px 7px;
+  white-space:nowrap;
+}
+.smeta{margin-left:auto; text-align:right; flex:none; padding-left:8px}
+.rate{font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums}
+.nvis{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--muted)}
+
+.bar{height:4px; border-radius:2px; background:var(--sunk); overflow:hidden; width:56px; margin-top:3px; margin-left:auto}
+.bar i{display:block; height:100%; background:var(--hit)}
+
+/* ---------- route builder ---------- */
+.stops{display:flex; flex-direction:column; gap:6px}
+.stop{
+  display:flex; align-items:center; gap:10px; padding:8px 10px;
+  border:1px solid var(--line); border-radius:8px; background:var(--sunk);
+}
+.stop.done{opacity:.55}
+.stopnum{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; width:22px; height:22px;
+  border-radius:5px; display:grid; place-items:center; background:var(--surface2);
+  border:1px solid var(--line); flex:none; font-variant-numeric:tabular-nums;
+}
+.stop .grow{flex:1; min-width:0}
+.stop .sname{font-size:13.5px}
+.iconbtn{
+  background:none; border:1px solid transparent; border-radius:6px; padding:3px 6px;
+  color:var(--muted); font-size:14px; line-height:1;
+}
+.iconbtn:hover{color:var(--text); border-color:var(--line)}
+
+.progress{height:6px; background:var(--sunk); border-radius:3px; overflow:hidden; border:1px solid var(--line)}
+.progress i{display:block; height:100%; background:var(--accent); transition:width .25s}
+
+/* ---------- feed ---------- */
+.feed{display:flex; flex-direction:column}
+.ev{display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--line-soft)}
+.ev:last-child{border-bottom:none}
+.ev .avatar{width:30px; height:30px; font-size:12px; margin-top:2px}
+.ev .body{flex:1; min-width:0; display:flex; flex-direction:column; gap:5px}
+.ev .line1{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+.ev .who{font-weight:600; font-size:14px}
+.ev .when{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted)}
+.tag{
+  display:inline-flex; align-items:center; gap:5px; border-radius:5px; padding:1px 7px;
+  font-family:Oswald,sans-serif; font-size:11.5px; letter-spacing:.07em; text-transform:uppercase;
+}
+.tag.score{background:var(--hit-wash); color:var(--hit)}
+.tag.stock{background:var(--stock-wash); color:var(--stock)}
+.tag.empty{background:var(--empty-wash); color:var(--empty)}
+.tag.locked{background:var(--locked-wash); color:var(--locked)}
+.haul{display:flex; flex-wrap:wrap; gap:5px; margin-top:1px}
+.haulitem{
+  font-size:12.5px; background:var(--sunk); border:1px solid var(--line-soft);
+  border-radius:5px; padding:2px 8px;
+}
+.shot{
+  margin-top:4px; max-width:230px; border-radius:8px; border:1px solid var(--line);
+  display:block; max-height:230px; object-fit:cover;
+}
+.note{font-size:13px; color:var(--text-2); font-style:italic}
+
+/* ---------- heatmap ---------- */
+.heatwrap{overflow-x:auto}
+.heat{border-collapse:separate; border-spacing:3px; width:100%; min-width:560px}
+.heat th{
+  font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:10.5px;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--muted); padding:2px 4px;
+  text-align:center; white-space:nowrap;
+}
+.heat th.day{text-align:right; width:74px; font-family:Oswald,sans-serif; font-size:12.5px; letter-spacing:.08em; color:var(--text-2)}
+.heat td{padding:0}
+.cell{
+  border-radius:6px; height:44px; width:100%; padding:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:0; border:1px solid var(--line-soft);
+  background:var(--sunk); color:var(--text);
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+}
+.cell .pc{font-size:13px; font-weight:600; line-height:1.1}
+.cell .n{font-size:9.5px; opacity:.75; line-height:1.2}
+.cell.void{color:var(--muted)}
+.dayrow{display:grid; grid-template-columns:repeat(7,1fr); gap:5px}
+@media (max-width:560px){ .dayrow{grid-template-columns:repeat(4,1fr)} }
+.daycell{
+  display:flex; flex-direction:column; align-items:center; gap:1px; padding:9px 4px; width:100%;
+  color:var(--text);
+  border:1px solid var(--line-soft); border-radius:7px; background:var(--sunk);
+  font-variant-numeric:tabular-nums;
+}
+.daycell.best{border-color:var(--hit); background:var(--hit-wash)}
+.daycell .dl{font-family:Oswald,sans-serif; font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.daycell.best .dl{color:var(--hit)}
+.daycell .dv{font-family:"IBM Plex Mono",monospace; font-size:17px; font-weight:600; line-height:1.15}
+.daycell.best .dv{color:var(--hit)}
+.daycell .dn{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--muted)}
+.cell[data-cell]{cursor:pointer; transition:outline-color .12s}
+.cell[data-cell]:hover{outline:2px solid var(--muted); outline-offset:1px}
+.cell.sel, .daycell.sel{outline:2px solid var(--accent); outline-offset:1px}
+.heat th.nocol, .cell.nocol{opacity:.92}
+.heat th.nocol{color:var(--accent)}
+.daycell{cursor:pointer; text-align:center; font-family:inherit}
+.daycell[disabled]{cursor:default; opacity:.6}
+.daycell:not([disabled]):hover{border-color:var(--muted)}
+
+.detail{margin-top:16px; border-top:1px solid var(--line-soft); padding-top:14px}
+.detail-empty{color:var(--muted); font-size:13.5px; padding:6px 0}
+.detail-h{display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; margin-bottom:12px}
+.detail-h h3{
+  font-family:Oswald,sans-serif; font-size:16px; letter-spacing:.07em;
+  text-transform:uppercase; font-weight:500; margin:0;
+}
+.dstore{border:1px solid var(--line); border-radius:9px; padding:11px 13px; background:var(--sunk)}
+.dstore + .dstore{margin-top:9px}
+.dhead{display:flex; align-items:center; gap:11px}
+.dcount{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  white-space:nowrap; flex:none;
+}
+.dactions{display:flex; gap:7px; flex-wrap:wrap; margin-top:9px}
+.dactions .btn{text-decoration:none}
+.dvisits{display:flex; flex-direction:column; gap:5px; margin-top:10px;
+  border-top:1px solid var(--line-soft); padding-top:9px}
+.dvisit{display:flex; gap:9px; align-items:baseline; flex-wrap:wrap; font-size:12.8px}
+.dwhen{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--text-2)}
+.dwho{font-weight:600}
+.dnote{color:var(--muted); font-style:italic; flex:1 1 100%; font-size:12.4px}
+
+.legend{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:12px; font-size:12px; color:var(--muted)}
+.swatches{display:flex; gap:3px}
+.sw{width:22px; height:12px; border-radius:3px; border:1px solid var(--line-soft)}
+
+/* ---------- intel ---------- */
+.prose{max-width:66ch}
+.prose h3{
+  font-family:Oswald,sans-serif; font-size:15px; letter-spacing:.08em; text-transform:uppercase;
+  font-weight:500; margin:24px 0 6px;
+}
+.prose h3:first-child{margin-top:0}
+.prose p{margin:0 0 11px; color:var(--text-2); font-size:14.2px}
+.prose strong{color:var(--text); font-weight:600}
+.chaincard{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--surface)}
+.chaincard + .chaincard{margin-top:10px}
+.chainhead{display:flex; align-items:center; gap:11px; padding:11px 14px; background:var(--surface2); border-bottom:1px solid var(--line-soft)}
+.chainhead h3{font-family:Oswald,sans-serif; font-size:15px; letter-spacing:.07em; text-transform:uppercase; font-weight:500; margin:0}
+.prio{
+  margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; padding:2px 8px; border-radius:999px; border:1px solid var(--line);
+}
+.prio.a{background:var(--hit-wash); color:var(--hit); border-color:transparent}
+.prio.b{background:var(--stock-wash); color:var(--stock); border-color:transparent}
+.prio.c{background:var(--empty-wash); color:var(--empty); border-color:transparent}
+.chainbody{padding:13px 14px; display:flex; flex-direction:column; gap:9px}
+.kv{display:flex; gap:10px; font-size:13.6px; align-items:baseline}
+.kv dt{
+  flex:none; width:96px; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted); padding-top:3px;
+}
+.kv dd{margin:0; color:var(--text-2)}
+
+/* ---------- reports & tips ---------- */
+.report{
+  border-left:3px solid var(--accent); background:var(--accent-wash);
+  padding:9px 12px; border-radius:0 7px 7px 0; display:flex; flex-direction:column; gap:3px;
+}
+.report q{font-size:13.6px; color:var(--text); quotes:"\201C" "\201D"}
+.report .src{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em;
+  color:var(--muted); text-transform:uppercase;
+}
+.tips{display:flex; flex-direction:column; gap:7px; padding:2px 0 12px 45px}
+.tip{
+  display:flex; gap:9px; align-items:flex-start; font-size:13.2px;
+  border-left:2px solid var(--line); padding:3px 0 3px 11px; color:var(--text-2);
+}
+.tip .meta{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--muted); white-space:nowrap}
+.tip .txt{flex:1; min-width:0}
+.storeblock{border-bottom:1px solid var(--line-soft)}
+.storeblock:last-child{border-bottom:none}
+.storeblock .srow{border-bottom:none}
+.addtip{
+  background:none; border:none; padding:2px 0 10px 45px; color:var(--muted);
+  font-size:12.5px; text-decoration:underline; text-underline-offset:3px; text-align:left;
+}
+.addtip:hover{color:var(--accent)}
+.verdict{
+  display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace;
+  font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:1px 6px;
+  border-radius:4px; background:var(--sunk); color:var(--muted); border:1px solid var(--line-soft);
+}
+.verdict.confirmed{background:var(--hit-wash); color:var(--hit); border-color:transparent}
+.verdict.dead{background:var(--empty-wash); color:var(--empty); border-color:transparent}
+
+.cal{display:flex; flex-direction:column}
+.calrow{display:flex; gap:13px; padding:11px 0; border-bottom:1px solid var(--line-soft); align-items:baseline}
+.calrow:last-child{border-bottom:none}
+.calrow.past{opacity:.5}
+.caldate{
+  flex:none; width:88px; font-family:"IBM Plex Mono",monospace; font-size:12.5px;
+  font-weight:600; letter-spacing:.02em;
+}
+.calrow.soon .caldate{color:var(--accent)}
+.calbody{flex:1; min-width:0}
+.calname{font-weight:600; font-size:14px}
+.calnote{font-size:12.8px; color:var(--muted)}
+
+.empty-state{padding:34px 18px; text-align:center; color:var(--muted); font-size:14px}
+.empty-state strong{display:block; color:var(--text-2); font-family:Oswald,sans-serif; letter-spacing:.06em; text-transform:uppercase; font-size:15px; font-weight:500; margin-bottom:6px}
+
+/* ---------- modal ---------- */
+.scrim{
+  position:fixed; inset:0; background:rgba(8,12,15,.55); z-index:80;
+  display:flex; align-items:flex-end; justify-content:center; padding:0;
+  backdrop-filter:blur(2px);
+}
+@media (min-width:640px){ .scrim{align-items:center; padding:20px} }
+.modal{
+  background:var(--surface); border:1px solid var(--line); width:100%; max-width:520px;
+  border-radius:14px 14px 0 0; max-height:92vh; overflow:auto; box-shadow:0 -10px 50px rgba(0,0,0,.35);
+}
+@media (min-width:640px){ .modal{border-radius:14px} }
+.modal-h{
+  display:flex; align-items:center; gap:10px; padding:14px 16px;
+  border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:var(--surface); z-index:2;
+}
+.modal-h h2{font-family:Oswald,sans-serif; font-size:16px; letter-spacing:.07em; text-transform:uppercase; font-weight:500}
+.modal-b{padding:16px; display:flex; flex-direction:column; gap:14px}
+.modal-f{display:flex; gap:8px; padding:0 16px 18px}
+.modal-f .btn{flex:1; justify-content:center; padding:10px}
+
+.faq{display:flex; flex-direction:column; gap:2px}
+.faqitem{border-bottom:1px solid var(--line-soft); padding:2px 0}
+.faqitem:last-child{border-bottom:none}
+.faqitem summary{
+  cursor:pointer; padding:9px 0; font-weight:600; font-size:14px; list-style:none;
+  display:flex; align-items:baseline; gap:9px;
+}
+.faqitem summary::-webkit-details-marker{display:none}
+.faqitem summary::before{content:"+"; color:var(--accent); font-family:"IBM Plex Mono",monospace; flex:none}
+.faqitem[open] summary::before{content:"–"}
+.faqitem summary:hover{color:var(--accent)}
+.faqbody{padding:0 0 11px 20px; font-size:13.6px; color:var(--text-2); line-height:1.6}
+.faqbody strong{color:var(--text)}
+
+.toastwrap{position:fixed; left:0; right:0; bottom:16px; display:flex; flex-direction:column; align-items:center; gap:6px; z-index:90; pointer-events:none; padding-inline:16px}
+.toast{
+  background:var(--text); color:var(--ground); padding:9px 15px; border-radius:999px;
+  font-size:13.5px; font-weight:500; box-shadow:var(--shadow); max-width:100%;
+}
+.toast.hit{background:var(--hit); color:#04150c}
+
+.fab{
+  position:fixed; right:16px; bottom:16px; z-index:50; border-radius:999px;
+  padding:13px 20px; font-family:Oswald,sans-serif; letter-spacing:.08em; text-transform:uppercase;
+  font-size:15px; box-shadow:0 6px 22px -6px rgba(0,0,0,.5);
+}
+.sronly{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+</style>
+
+
+<div id="gate" hidden>
+  <div class="gatebox">
+    <div class="mark" style="justify-content:center">Pack<em>Boys</em></div>
+
+    <div id="gateLoading" hidden>
+      <p class="gatelede">Checking you in…</p>
+    </div>
+
+    <div id="gateSignin" hidden>
+      <p class="gatelede">Louisville TCG restock intel, for the crew. Sign in with the email you were invited on — no password to make up.</p>
+      <form id="siForm" autocomplete="on">
+        <input type="email" id="siEmail" placeholder="you@example.com" required autocomplete="email">
+        <button class="btn primary" id="siBtn" type="submit">Email me a sign-in link</button>
+      </form>
+      <p class="gatemsg" id="siMsg"></p>
+    </div>
+
+    <div id="gateSent" hidden>
+      <p class="gatelede">Check <b id="gateSentEmail"></b>. Tap the link in that email and you're in — it opens straight back here.</p>
+      <p class="gatemsg">Nothing after a minute? Check spam, then <button class="linkbtn" data-tryagain>try a different address</button>.</p>
+    </div>
+
+    <div id="gateDenied" hidden>
+      <p class="gatelede">Signed in as <b id="gateDeniedEmail"></b>. Got an invite code?</p>
+      <form id="rdForm" autocomplete="off">
+        <input type="text" id="rdCode" placeholder="PACK-XXXX-XXXX" spellcheck="false" autocapitalize="characters">
+        <button class="btn primary" id="rdBtn" type="submit">Join the crew</button>
+      </form>
+      <p class="gatemsg" id="rdMsg">No code? Ask whoever runs this. Wrong account? <button class="linkbtn" data-signout>Sign out</button>.</p>
+    </div>
+
+    <div id="gateError" hidden>
+      <p class="gatelede">Something's not set up right.</p>
+      <p class="gatemsg" id="gateErrorMsg"></p>
+    </div>
+  </div>
+</div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brandrow">
+      <div class="mark">Pack<em>Boys</em></div>
+      <div class="brandsub">Louisville &amp; So. Indiana &middot; TCG restock intel</div>
+      <div class="whoami">
+        <button class="linkbtn" id="inviteBtn" hidden>Invite</button>
+        <button class="linkbtn" id="faqBtn">FAQ</button>
+        <button class="linkbtn" id="signOutBtn">Sign out</button>
+        <div class="avatar" id="meAvatar">–</div>
+        <button class="linkbtn" id="meBtn">set name</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+
+<div class="shell">
+
+  <div class="now" id="nowStrip"></div>
+
+  <!-- ============ HOME ============ -->
+  <section id="tab-home">
+    <div class="hero">
+      <div class="hero-main">
+        <div class="lbl">Today</div>
+        <h1 id="heroDay">—</h1>
+        <p id="heroLine">—</p>
+        <div class="btnrow" id="heroActions"></div>
+      </div>
+      <div class="hero-side" id="heroStats"></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">
+        <h2>Open questions</h2>
+        <div class="spacer"></div>
+        <span class="dim">Three claims worth killing or confirming</span>
+      </div>
+      <div class="panel-b"><div class="qgrid" id="questions"></div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-h"><h2>Latest from the crew</h2></div>
+        <div class="panel-b"><div class="feed" id="homeFeed"></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>Next releases</h2></div>
+        <div class="panel-b"><div class="cal" id="homeCal"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RUN ============ -->
+  <section id="tab-run">
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-h">
+          <h2 id="runTitle">Today's run</h2>
+          <div class="spacer"></div>
+          <button class="btn sm ghost" id="mapsBtn">Open in Maps</button>
+          <button class="btn sm ghost" id="clearRunBtn">Clear</button>
+        </div>
+        <div class="panel-b">
+          <div class="progress" style="margin-bottom:12px"><i id="runBar" style="width:0%"></i></div>
+          <div class="stops" id="runStops"></div>
+          <div class="btnrow" style="margin-top:14px">
+            <button class="btn" id="addStopBtn">+ Add stop</button>
+            <button class="btn" id="saveRouteBtn">Save as route</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><h2>Saved routes</h2></div>
+        <div class="panel-b" id="routeList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOG ============ -->
+  <section id="tab-log" hidden>
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-h">
+          <h2>Pick a store</h2>
+          <div class="spacer"></div>
+          <input type="search" id="storeSearch" placeholder="Filter stores…" style="max-width:200px">
+        </div>
+        <div class="panel-b" style="padding-top:6px">
+          <div class="chips" id="chainFilter" style="margin-bottom:10px"></div>
+          <div class="storelist" id="logStoreList"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h2>How it works</h2></div>
+        <div class="panel-b prose">
+          <p><strong>Log the misses too.</strong> A heatmap built only from wins is just a list of lucky days. Empty pegs at 3pm Wednesday is real information — it's what makes 6am Thursday mean something.</p>
+          <p><strong>Four outcomes.</strong> <em>Scored</em> means you bought. <em>Stock out</em> means product was on the peg and you passed or got there second. <em>Empty</em> means bare hooks. <em>Locked</em> means it's behind the counter or in a case — which is its own useful signal, because those stores restock on a schedule someone at the service desk knows.</p>
+          <p><strong>Three weeks, three time slots.</strong> Hit each store you care about in different windows for about three weeks before you trust a cell. The grid shows sample size under every percentage for exactly this reason.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEED ============ -->
+  <section id="tab-feed" hidden>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">
+        <h2>Activity</h2>
+        <div class="spacer"></div>
+        <div class="chips" id="feedFilter"></div>
+      </div>
+      <div class="panel-b"><div class="feed" id="feed"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ HEAT ============ -->
+  <section id="tab-heat" hidden>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">
+        <h2>Day &times; time</h2>
+        <div class="spacer"></div>
+        <select id="heatScope" style="max-width:260px"></select>
+      </div>
+      <div class="panel-b">
+        <div id="byDay"></div>
+        <div class="heatwrap"><table class="heat" id="heatTable"></table></div>
+        <div class="legend">
+          <span>Share of visits with product on the shelf</span>
+          <span class="swatches" id="legendSw"></span>
+          <span>0% → 100%</span>
+          <span style="margin-left:auto">Big number is the hit rate; small number is visits logged.</span>
+        </div>
+        <div class="detail" id="heatDetail"></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h"><h2>Store standings</h2></div>
+      <div class="panel-b"><div id="standings"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ STORES ============ -->
+  <section id="tab-stores" hidden>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">
+        <h2>The map</h2>
+        <div class="spacer"></div>
+        <button class="btn sm" id="addStoreBtn">+ Add a store</button>
+      </div>
+      <div class="panel-b" style="padding-top:8px">
+        <div class="chips" id="chainFilter2" style="margin-bottom:12px"></div>
+        <div id="storeCatalog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INTEL ============ -->
+  <section id="tab-intel" hidden>
+    <div class="grid2">
+      <div>
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-h"><h2>The days moved</h2></div>
+          <div class="panel-b prose">
+            <div class="report" style="margin-bottom:12px">
+              <q>Walmart and Target no longer have set days besides release days, they're random. Meijer doesn't stock Pokémon in Lou due to theft. Best Buy usually gets them on Mondays.</q>
+              <span class="src">Louisville collector group, Facebook · Sept 2026 · unverified</span>
+            </div>
+            <p>That matches how these buildings actually work. Walmart and Target both take freight most days of the week now, and a card case gets worked whenever it surfaces in the flow rather than on a standing card day. Chain-wide, there is no weekday to find at those two, and <strong>the only fixed dates left are release dates</strong> — those are on the calendar to your right.</p>
+            <p>But a second report from the same group says something narrower, and the two don't actually contradict each other:</p>
+            <div class="report" style="margin:2px 0 12px">
+              <q>I go every Thursday after work. Target always got lines. Walmart has small lines. Outer Loop and Bashford Manor stock Thursday.</q>
+              <span class="src">Mark Stratton, Louisville collector group · ~Aug 2026 · unverified</span>
+            </div>
+            <p>"No chain-wide day" and "<em>these two specific stores</em> stock Thursday" are both easy to be true at once — freight cadence is set per building, so an individual store can run a stable Thursday rhythm inside a chain that has no policy at all. That is the single most testable claim anyone has handed us, and it's already loaded as tips on the candidate stores. It's ambiguous whether he means the Walmarts or the Targets at those two intersections, so both are tagged; a few Thursday logs settle it.</p>
+            <p>He also gives away the thing a heatmap can't see: <strong>Target draws lines and Walmart doesn't.</strong> If people queue at Target, being second in line is the same as being empty-handed, and a Target run is really a question of how early you're willing to stand there. Walmart's small lines mean a normal early-morning visit still works.</p>
+
+            <h3>Friday is now the strongest claim on the board</h3>
+            <p>Three East End Targets — St. Matthews, Springhurst, and Middletown — plus Jeffersontown are all reported to run <strong>Friday</strong>, and the two dated sightings in the log so far (Springhurst, 4 April 2025; Jefferson Pavilion, 3 April 2026) were both Fridays too. That's four store reports and two logged data points pointing the same direction, against one chain-level claim that there's no pattern at all. The honest reading is that "no set days" is probably true of <em>Walmart</em>, and probably wrong about Target in this market.</p>
+            <p>It also comes with a route, which is the most valuable thing anyone has said so far:</p>
+            <div class="report" style="margin:2px 0 12px">
+              <q>Hit St. Matthews first, they open at 7. Then drive straight down Westport to Springhurst, they open at 8 and almost always have more than all the others. Then go wait in line at Best Buy.</q>
+              <span class="src">Louisville collector group · unverified, but the opening times check out</span>
+            </div>
+            <p>The 7am and 8am opening times are real — Target's own store pages confirm St. Matthews at 7am and Middletown at 8am, and every store in this app now shows its opening time on the run so you can build a ladder like this yourself. That hour of daylight between St. Matthews and Springhurst is the whole trick: it's the only pair in the city where you can be first in line at one store and still be first in line at the next. It's loaded as the <strong>Friday ladder</strong> route on the Run tab.</p>
+            <p>So: at Walmart you're hunting a <strong>time of day</strong> and a <strong>store</strong> rather than a weekday — that's a pattern the heatmap finds and a schedule can't. At Target, Best Buy, Dollar General and Five Below a real weekday looks like it still exists. Friday at the East End Targets, Monday at Best Buy, and Thursday on Outer Loop and Bashford Manor are the three hypotheses to go kill or confirm, in that order.</p>
+            <p>What's still worth asking: <em>"what days do you get trucks?"</em> and <em>"who puts the card pegs out?"</em>, asked of a stocker rather than a manager. Even in a random-day world, the person who works the pegs knows their own shift. Post whatever they tell you as a tip so it doesn't live only in your head.</p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-h">
+            <h2>Local intel</h2>
+            <div class="spacer"></div>
+            <button class="btn sm" id="addTipBtn">+ Add a tip</button>
+          </div>
+          <div class="panel-b" id="tipFeed"></div>
+        </div>
+
+        <div id="chainIntel"></div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-h"><h2>Release calendar</h2></div>
+          <div class="panel-b"><div class="cal" id="calendar"></div></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-h"><h2>Field notes</h2></div>
+          <div class="panel-b prose">
+            <h3>Street dates</h3>
+            <p>Target enforces them hard — product sits in the back until the date, and asking early gets you nowhere. Walmart is looser, and early puts genuinely happen, which is why a Walmart sweep the two days <em>before</em> a release is worth more than the same sweep at Target.</p>
+            <h3>Empty pegs aren't an answer</h3>
+            <p>More Louisville-area stores moved sealed product behind the checklane or into a locked case through 2026. Bare hooks increasingly mean "ask", not "gone". Log those as <em>Locked</em> and the store's standing stops lying to you.</p>
+            <h3>The apps</h3>
+            <p>Target's app gives you an aisle location and a store-level in-stock flag; the counts are unreliable but a jump from zero to anything is a real signal. Walmart's "check in-store availability" gives you an aisle too. Neither sees what's still on a pallet in the back, which is the whole game.</p>
+            <h3>Vendor-serviced racks</h3>
+            <p>Kroger, Walgreens and CVS card racks are stocked by a third-party rep on a weekly route, not by store staff on truck day. That's a different schedule entirely, and it's the one most people never think to ask about.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<button class="btn primary fab" id="fab">Log a stop</button>
+<div class="toastwrap" id="toasts"></div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   Catalog — verified store locations, Louisville metro
+   ============================================================ */
+var CHAINS = {
+  target:  {name:"Target",        abbr:"TGT", color:"#CC0000", prio:"a"},
+  walmart: {name:"Walmart",       abbr:"WMT", color:"#0071CE", prio:"a"},
+  meijer:  {name:"Meijer",        abbr:"MEI", color:"#C8102E", prio:"b"},
+  bestbuy: {name:"Best Buy",      abbr:"BBY", color:"#0046BE", prio:"a"},
+  fivebelow:{name:"Five Below",   abbr:"5B",  color:"#7B3FA0", prio:"b"},
+  dollargeneral:{name:"Dollar General", abbr:"DG", color:"#FFC220", color2:"#6b5200", prio:"b"},
+  dollartree:{name:"Dollar Tree", abbr:"DT",  color:"#1F7A33", prio:"c"},
+  kroger:  {name:"Kroger",        abbr:"KRO", color:"#0B4EA2", prio:"c"},
+  gamestop:{name:"GameStop",      abbr:"GS",  color:"#2B2B2B", prio:"b"},
+  ace:     {name:"Ace Hardware",  abbr:"ACE", color:"#D32027", prio:"c"},
+  lowes:   {name:"Lowe's",        abbr:"LOW", color:"#004990", prio:"c"},
+  pharmacy:{name:"Walgreens / CVS", abbr:"RX", color:"#C8102E", prio:"c"},
+  club:    {name:"Costco / Sam's", abbr:"CLB", color:"#005DAA", prio:"c"},
+  other:   {name:"Other",         abbr:"•",   color:"#6A757D", prio:"c"}
+};
+
+var SEED_STORES = [
+  // --- Target (6 in Jefferson Co. + So. Indiana + outer) ---
+  {id:"tgt-stmatthews", chain:"target", name:"Target — St. Matthews", addr:"4174 Westport Rd, Louisville, KY 40207", zone:"core", opens:"7am"},
+  {id:"tgt-springhurst", chain:"target", name:"Target — Springhurst", addr:"4101 Towne Center Dr, Louisville, KY 40241", zone:"core", opens:"8am"},
+  {id:"tgt-middletown", chain:"target", name:"Target — Middletown", addr:"12975 Shelbyville Rd, Louisville, KY 40243", zone:"core", opens:"8am"},
+  {id:"tgt-jtown", chain:"target", name:"Target — Jeffersontown (Hurstbourne)", addr:"4640 Taylorsville Rd, Louisville, KY 40220", zone:"core"},
+  {id:"tgt-bashford", chain:"target", name:"Target — Bashford Manor", addr:"3600 Mall Rd, Louisville, KY 40218", zone:"core"},
+  {id:"tgt-jeffpav", chain:"target", name:"Target — Jefferson Pavilion", addr:"7311 Jefferson Blvd, Louisville, KY 40219", zone:"core"},
+  {id:"tgt-clarksville", chain:"target", name:"Target — Clarksville IN", addr:"1125 Veterans Pkwy, Clarksville, IN 47129", zone:"indiana", opens:"8am"},
+  {id:"tgt-newalbany", chain:"target", name:"Target — New Albany IN", addr:"2209 State St, New Albany, IN 47150", zone:"indiana", opens:"8am"},
+  {id:"tgt-etown", chain:"target", name:"Target — Elizabethtown", addr:"1631 Ring Rd, Elizabethtown, KY 42701", zone:"outer"},
+
+  // --- Walmart ---
+  {id:"wmt-526", chain:"walmart", name:"Walmart #526 — Springhurst", addr:"3706 Diann Marie Rd, Louisville, KY 40241", zone:"core", opens:"6am"},
+  {id:"wmt-5418", chain:"walmart", name:"Walmart #5418 — Bashford Manor", addr:"2020 Bashford Manor Ln, Louisville, KY 40218", zone:"core", opens:"6am"},
+  {id:"wmt-3294", chain:"walmart", name:"Walmart #3294 — Fern Creek", addr:"7101 Cedar Springs Blvd, Louisville, KY 40291", zone:"core", opens:"6am"},
+  {id:"wmt-5417", chain:"walmart", name:"Walmart #5417 — Iroquois", addr:"175 Outer Loop, Louisville, KY 40214", zone:"core", opens:"6am"},
+  {id:"wmt-6931", chain:"walmart", name:"Walmart #6931 — Okolona", addr:"4840 Outer Loop, Louisville, KY 40219", zone:"core", opens:"6am"},
+  {id:"wmt-1170", chain:"walmart", name:"Walmart #1170 — Valley Station", addr:"10445 Dixie Hwy, Louisville, KY 40272", zone:"core", opens:"6am"},
+  {id:"wmt-589", chain:"walmart", name:"Walmart #589 — Hillview", addr:"11901 Standiford Plaza Dr, Louisville, KY 40229", zone:"core", opens:"6am"},
+  {id:"wmt-4524", chain:"walmart", name:"Walmart NM #4524 — Shively", addr:"5360 Dixie Hwy, Louisville, KY 40216", zone:"core", note:"Neighborhood Market — thin or no TCG. Verify before adding to a route."},
+  {id:"wmt-clarksville", chain:"walmart", name:"Walmart — Clarksville IN", addr:"1351 Veterans Pkwy, Clarksville, IN 47129", zone:"indiana", opens:"6am"},
+  {id:"wmt-newalbany", chain:"walmart", name:"Walmart — New Albany IN", addr:"2910 Grant Line Rd, New Albany, IN 47150", zone:"indiana", opens:"6am"},
+  {id:"wmt-corydon", chain:"walmart", name:"Walmart — Corydon IN", addr:"2363 Highway 135 NW, Corydon, IN 47112", zone:"outer", opens:"6am"},
+  {id:"wmt-shepherdsville", chain:"walmart", name:"Walmart — Shepherdsville", addr:"545 Conestoga Pkwy, Shepherdsville, KY 40165", zone:"outer", opens:"6am"},
+  {id:"wmt-shelbyville", chain:"walmart", name:"Walmart — Shelbyville", addr:"500 Taylorsville Rd, Shelbyville, KY 40065", zone:"outer", opens:"6am"},
+  {id:"wmt-lagrange", chain:"walmart", name:"Walmart — La Grange", addr:"1015 New Moody Ln, La Grange, KY 40031", zone:"outer", opens:"6am"},
+  {id:"wmt-bardstown", chain:"walmart", name:"Walmart — Bardstown", addr:"3795 E John Rowan Blvd, Bardstown, KY 40004", zone:"outer", opens:"6am"},
+
+  // --- Best Buy ---
+  {id:"bby-stmatthews", chain:"bestbuy", name:"Best Buy — St. Matthews", addr:"5085 Shelbyville Rd, Louisville, KY 40207", zone:"core", opens:"10am"},
+  {id:"bby-outerloop", chain:"bestbuy", name:"Best Buy — Outer Loop", addr:"4251 Outer Loop, Louisville, KY 40219", zone:"core", opens:"10am"},
+
+  // --- Meijer ---
+  {id:"mei-springhurst", chain:"meijer", name:"Meijer — Springhurst", addr:"4100 Towne Center Dr, Louisville, KY 40241", zone:"core", opens:"6am"},
+  {id:"mei-hurstbourne", chain:"meijer", name:"Meijer — Hurstbourne", addr:"4500 S Hurstbourne Pkwy, Louisville, KY 40299", zone:"core", opens:"6am"},
+  {id:"mei-preston", chain:"meijer", name:"Meijer — Preston Hwy", addr:"9500 Preston Hwy, Louisville, KY 40229", zone:"core", opens:"6am"},
+  {id:"mei-dixie", chain:"meijer", name:"Meijer — Dixie Hwy", addr:"9905 Dixie Hwy, Louisville, KY 40272", zone:"core", opens:"6am"},
+
+  // --- Ace Hardware (co-op; each store orders on its own cycle) ---
+  {id:"ace-stmatthews", chain:"ace", name:"Ace Hardware — St. Matthews", addr:"4224 Shelbyville Rd, Louisville, KY 40207", zone:"core", opens:"8am"},
+  {id:"ace-jtown", chain:"ace", name:"Ace Hardware — Jeffersontown", addr:"10513 Watterson Trl, Louisville, KY 40299", zone:"core", opens:"8am"},
+  {id:"ace-middletown", chain:"ace", name:"Ace Hardware — Middletown", addr:"14004 Shelbyville Rd, Louisville, KY 40245", zone:"core", opens:"8am"},
+  {id:"ace-preston", chain:"ace", name:"Ace Hardware — Preston Hwy", addr:"5011 Preston Hwy, Louisville, KY 40213", zone:"core", opens:"8am"},
+  {id:"ace-taylor", chain:"ace", name:"Ace Hardware — Taylor Blvd", addr:"3348 Taylor Blvd, Louisville, KY 40215", zone:"core", opens:"8am"},
+  {id:"ace-portland", chain:"ace", name:"Ace Hardware — Portland Ave", addr:"2527 Portland Ave, Louisville, KY 40212", zone:"core", opens:"8am"},
+  {id:"ace-market", chain:"ace", name:"Ace Hardware — W Market St", addr:"2616 W Market St, Louisville, KY 40212", zone:"core", opens:"8am"},
+
+  // --- Five Below ---
+  {id:"5b-middletown", chain:"fivebelow", name:"Five Below — Middletown", addr:"13401 Shelbyville Rd, Louisville, KY 40245", zone:"core"},
+  {id:"5b-mallstm", chain:"fivebelow", name:"Five Below — Mall St. Matthews", addr:"5000 Shelbyville Rd, Louisville, KY 40207", zone:"core"},
+  {id:"5b-hurstbourne", chain:"fivebelow", name:"Five Below — Hurstbourne", addr:"1959 S Hurstbourne Pkwy, Louisville, KY 40220", zone:"core"},
+  {id:"5b-bardstownrd", chain:"fivebelow", name:"Five Below — Bardstown Rd", addr:"5316A Bardstown Rd, Louisville, KY 40291", zone:"core"}
+];
+
+var CHAIN_INTEL = [
+  {chain:"target", prio:"a", rows:[
+    ["Freight", "Most stores take truck four to seven days a week. The inbound/flow team unloads and pushes overnight into early morning — roughly 4am to 10am is when pegs get worked."],
+    ["Best window", "Right at open, and again mid-morning after the first push finishes. Afternoons are almost always picked over."],
+    ["Street dates", "Enforced strictly. Sealed product sits in the back until the release date, so there is no such thing as an early Target put."],
+    ["Limits", "A per-guest daily limit on TCG has been standing policy since 2021, and individual stores tightened further through 2026 — some to one item, some to behind-the-counter only. It is store discretion now, so confirm at each one."],
+    ["Watch for", "Locked cases and checklane storage. Bare pegs at a Target increasingly mean the product is fifteen feet away behind a register."],
+    ["Lines", "Reported to always draw a line locally. That changes the calculation: second in line is the same as empty-handed, so a Target run is a question of how early you'll stand there, not whether you'll swing by."]
+  ], reports:[
+    {text:"No set days anymore besides release days — it's random.", src:"Louisville collector group, Facebook", when:"Sept 2026"},
+    {text:"Target always got lines.", src:"Mark Stratton, Louisville collector group", when:"~Aug 2026"},
+    {text:"Middletown, Hurstbourne and St. Matthews are all Friday. Hit St. Matthews first, they open at 7. Then drive straight down Westport to Springhurst, they open at 8 and almost always have more than all the others.", src:"Louisville collector group", when:"Sept 2026"}
+  ]},
+  {chain:"walmart", prio:"a", rows:[
+    ["Freight", "Supercenters take trucks most days. Overnight stocking runs roughly 10pm to 7am and normally works toys and the card pegs; a day-shift pick follows."],
+    ["Best window", "First hour after open. The overnight team has finished and the aisle hasn't been swept yet."],
+    ["Street dates", "Enforced loosely and inconsistently. Early puts are real here — worth a sweep in the two days before a release."],
+    ["Online", "Since 24 August 2026 Walmart runs a Collectibles Drawing: a free-entry online lottery for high-demand items, with the first Pokémon entry (a Prismatic Evolutions ETB at $69.99) on 31 August. It's online-only and changes nothing about in-store stocking."],
+    ["Watch for", "Store-number differences matter more than at Target. #526 and #3294 serve very different neighborhoods and get cleared at very different speeds."],
+    ["Lines", "Reported to draw only small lines here, unlike Target — so a normal early visit is still competitive rather than a queue you have to join."]
+  ], reports:[
+    {text:"No set days anymore besides release days — it's random.", src:"Louisville collector group, Facebook", when:"Sept 2026"},
+    {text:"Outer Loop and Bashford Manor stock Thursday. Walmart has small lines.", src:"Mark Stratton, Louisville collector group", when:"~Aug 2026"}
+  ]},
+  {chain:"bestbuy", prio:"a", rows:[
+    ["How it works", "Allocation-driven rather than freight-driven, and worked by a small merchandising crew rather than an overnight flow team — which is exactly why a fixed weekday is plausible here when it isn't at Walmart or Target."],
+    ["Best window", "At open on the reported restock day. Two Louisville stores only, so a full sweep is twenty minutes."],
+    ["Where to look", "Near the checkout lanes and the collectibles/Funko run, not the gaming aisle."],
+    ["Why it's underrated", "Almost nobody in this market treats Best Buy as a card stop, which is the entire argument for treating it as one."]
+  ], reports:[
+    {text:"Best Buy usually gets them on Mondays.", src:"Louisville collector group, Facebook", when:"Sept 2026"}
+  ]},
+  {chain:"meijer", prio:"c", rows:[
+    ["Status", "Reported to have stopped carrying Pokémon at the Louisville stores over theft. If that holds, all four locations come off the route entirely — but it's a secondhand claim and worth one confirming trip before you write them off."],
+    ["If it's wrong", "Overnight stocking, the longest hours of anything on this list, and a card spinner near electronics or the toy aisle. That would make it the most underhunted big-box in the market."],
+    ["How to settle it", "Ask at the service desk, then log it. One <em>Empty</em> or <em>Locked</em> stop at each of the four answers this for everybody on the link."]
+  ], reports:[
+    {text:"Meijer doesn't stock Pokémon in Louisville due to theft.", src:"Louisville collector group, Facebook", when:"Sept 2026"}
+  ]},
+  {chain:"fivebelow", prio:"b", rows:[
+    ["Freight", "One or two trucks a week, stocked during the day rather than overnight."],
+    ["Stock type", "Blisters, tins, and value packs rather than ETBs. Occasionally older sealed product at well under market."],
+    ["Best window", "Midday on the store's truck day, which staff will tell you if you ask."]
+  ]},
+  {chain:"dollargeneral", prio:"b", rows:[
+    ["Freight", "One to three trucks a week depending on store volume. A small crew unloads rolltainers and works them over the following one to three days, so product trickles out rather than landing all at once."],
+    ["Best window", "The day after truck day, midday. Not truck day itself — it's still in the rolltainer."],
+    ["Stock type", "Mini tins, single blisters, sometimes older ETBs sitting at plain MSRP."],
+    ["Best play", "Ask the manager for the truck day outright. They almost always tell you, and it converts a whole store from guesswork to a standing appointment."]
+  ]},
+  {chain:"dollartree", prio:"c", rows:[
+    ["Freight", "One to two trucks a week, same slow trickle as DG."],
+    ["Stock type", "Mostly older value blisters. Low ceiling, but low competition and low prices."]
+  ]},
+  {chain:"kroger", prio:"c", rows:[
+    ["Who stocks it", "A third-party vendor rep on a weekly route — not store staff on truck day. This is the single most useful thing to know about grocery and pharmacy racks."],
+    ["Best play", "Ask the front-end lead which day the card rep comes. That day, not the truck day, is the restock."]
+  ]},
+  {chain:"gamestop", prio:"b", rows:[
+    ["How it works", "Allocation-based rather than freight-based. Release-day, in-person, with hard limits, and quantities set well in advance."],
+    ["Best play", "Build a relationship at one store and ask what their allocation looks like for an upcoming set. They usually know weeks out."]
+  ]},
+  {chain:"pharmacy", prio:"c", rows:[
+    ["Who stocks it", "Same vendor-rep model as Kroger. Weekly route, small facings, usually near the register."],
+    ["Reality check", "Low yield, but they're everywhere and take ninety seconds to check if you're already stopped."]
+  ]},
+  {chain:"ace", prio:"b", rows:[
+    ["How it works", "Ace is a co-op — every store orders independently from a regional service center on its own weekly delivery cycle. There is no chain pattern to find, which cuts both ways: no schedule to learn, but also nobody else bothering to check."],
+    ["What's landing", "Reported to be getting <em>Chaos Rising</em> — the current Mega Evolution set, not clearance backstock. Current-set product at a hardware store is exactly the kind of shelf nobody sweeps."],
+    ["Day and time", "Nobody has pinned one down, and because each store orders on its own cycle there may not be a single answer. Seven locations are loaded here; a few logged visits at different times will say more than any amount of asking around."],
+    ["Best play", "Ask the owner directly — at a co-op the owner actually knows their delivery day, and unlike a big-box manager they have no reason not to tell you."],
+    ["Where to look", "Register counter and seasonal endcaps, not an aisle. Ace card product is an impulse buy, so it lives where impulse buys live."]
+  ]},
+  {chain:"lowes", prio:"c", rows:[
+    ["Reality check", "Not a real TCG channel. Occasional seasonal impulse product at checkout, nothing allocated."],
+    ["Best play", "Worth a thirty-second checkout glance if you're in one anyway. Don't build a route around it."]
+  ]},
+  {chain:"club", prio:"c", rows:[
+    ["How it works", "Pallet drops rather than peg restocks — all-or-nothing, and usually early in the week."],
+    ["Best play", "Multi-pack and bundle value is the best on this list when it lands, but it goes in hours. Membership required at both."]
+  ]}
+];
+
+var CALENDAR = [
+  {date:"2026-09-16", name:"Pokémon — 30th Celebration (main wave)", note:"Elite Trainer Box $49.99 · Poster Collection $14.99 · Tech Sticker Collections $14.99 · ex Boxes $21.99 · Knock Out Collection & 2-pack blister $9.99"},
+  {date:"2026-10-02", name:"Pokémon — 30th Celebration Booster Bundles & Mini Tins", note:"Booster Bundle $26.94 · Mini Tins $9.99"},
+  {date:"2026-10-02", name:"Magic: The Gathering — Reality Fracture", note:"Standard set. Big-box carries bundles and Play/Collector boosters."},
+  {date:"2026-10-16", name:"Disney Lorcana — Hyperia City (game stores)", note:"Local game stores and Disney locations first."},
+  {date:"2026-10-23", name:"Disney Lorcana — Hyperia City (mass retail)", note:"One week behind the game-store date. This is the big-box date."},
+  {date:"2026-10-31", name:"One Piece — EB-05 Heroines Edition vol. 2", note:"October window announced; exact English day not confirmed by Bandai yet. Verify before planning a run."},
+  {date:"2026-11-06", name:"Pokémon — 30th Celebration premium wave", note:"Day & Night Ultra-Premium Collections $179.99 · Ditto Premium Collection $39.99 · Mew and Mewtwo Figure Collections $29.99"},
+  {date:"2026-11-13", name:"Magic: The Gathering — Star Trek (Universes Beyond)", note:"Commander deck bundles. Historically strong big-box allocation."},
+  {date:"2026-12-04", name:"Pokémon — holiday tins", note:"Retailer-reported, not officially confirmed. Treat as a soft date."}
+];
+
+var BUCKETS = [
+  {k:"pre",  label:"Pre-8a",  from:0,  to:8},
+  {k:"am",   label:"8–11a",   from:8,  to:11},
+  {k:"mid",  label:"11a–2p",  from:11, to:14},
+  {k:"pm",   label:"2–5p",    from:14, to:17},
+  {k:"eve",  label:"5–8p",    from:17, to:20},
+  {k:"late", label:"After 8p",from:20, to:24}
+];
+var COLS = BUCKETS.concat([{k:"none", label:"No time", from:-1, to:-1}]);
+var DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var DAYS_S = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+var OUTCOMES = [
+  {k:"score",  label:"Scored",   sub:"Bought something"},
+  {k:"stock",  label:"Stock out",sub:"On the peg, didn't buy"},
+  {k:"empty",  label:"Empty",    sub:"Bare hooks"},
+  {k:"locked", label:"Locked",   sub:"Behind counter / case"}
+];
+var BRANDS = ["Pokémon","One Piece","Magic","Lorcana","Yu-Gi-Oh","Sports","Other"];
+
+var PALETTE = ["#E0803A","#4FA3D1","#68B06A","#C96BA4","#D6B13F","#7E8FD6","#CF6B5C","#5EAFA0"];
+
+/* ============================================================
+   State
+   ============================================================ */
+var state = {
+  tab: "home",
+  heatSel: null,
+  me: null,
+  visits: [],           // rows from the shared database
+  routes: [],           // {id,name,stopIds,by}
+  tips: [],             // {id,scope,text,by,byKey,at,confirms:[]}
+  customStores: [],
+  run: {name:"", stopIds:[], done:{}},
+  peers: [],
+  chainFilter: "all",
+  chainFilter2: "all",
+  feedFilter: "all",
+  heatScope: "all",
+  search: ""
+};
+var sb=null;
+
+function lsGet(k, d){ try{ var v=localStorage.getItem("pegrun."+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+function lsSet(k, v){ try{ localStorage.setItem("pegrun."+k, JSON.stringify(v)); }catch(e){} }
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40) || "x"; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+function initMe(){
+  var me = lsGet("me", null) || {};
+  state.me = {
+    key: AUTH_USER ? AUTH_USER.id : null,
+    email: AUTH_USER ? AUTH_USER.email : "",
+    name: me.name || "",
+    color: me.color || PALETTE[Math.floor(Math.random()*PALETTE.length)]
+  };
+}
+function saveMe(){ lsSet("me", {name: state.me.name, color: state.me.color}); }
+function initials(n){
+  n = (n||"?").trim();
+  var p = n.split(/\s+/);
+  return (p.length>1 ? p[0][0]+p[1][0] : n.slice(0,2)).toUpperCase();
+}
+
+/* ============================================================
+   Store helpers
+   ============================================================ */
+function allStores(){ return SEED_STORES.concat(state.customStores); }
+function storeById(id){
+  var a = allStores();
+  for(var i=0;i<a.length;i++){ if(a[i].id===id) return a[i]; }
+  return null;
+}
+function chainOf(s){ return CHAINS[s && s.chain] || CHAINS.other; }
+function usedChains(){
+  var seen={}, out=[], a=allStores();
+  for(var i=0;i<a.length;i++){ if(!seen[a[i].chain]){ seen[a[i].chain]=1; out.push(a[i].chain); } }
+  return out;
+}
+
+/* ============================================================
+   Visits
+   ============================================================ */
+function monthKey(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+}
+function myDocId(d){ return monthKey(d)+"__"+state.me.key; }
+
+function allVisits(){ return state.visits; }
+
+function rowToVisit(r){
+  return {
+    id:r.id, storeId:r.store_id, ts:r.ts, outcome:r.outcome, noTime:!!r.no_time,
+    brands:r.brands||[], items:r.items||[], note:r.note||"", photo:r.photo||null,
+    who:r.user_name||"Someone", color:r.user_color||"#6A757D", owner:r.user_id
+  };
+}
+
+function bucketOf(hour){
+  for(var i=0;i<BUCKETS.length;i++){ if(hour>=BUCKETS[i].from && hour<BUCKETS[i].to) return BUCKETS[i].k; }
+  return "late";
+}
+
+async function addVisit(v){
+  var row = {
+    store_id: v.storeId, ts: v.ts, no_time: !!v.noTime, outcome: v.outcome,
+    brands: v.brands||[], items: v.items||[], note: v.note||"", photo: v.photo||null,
+    user_id: state.me.key, user_name: state.me.name||"Anonymous", user_color: state.me.color
+  };
+  // Show it immediately; the realtime echo will replace this with the stored row.
+  var optimistic = rowToVisit(Object.assign({id:"tmp-"+uid()}, row));
+  state.visits = [optimistic].concat(state.visits);
+  renderAll();
+  var res = await sb.from("visits").insert(row).select().single();
+  if(res.error){
+    state.visits = state.visits.filter(function(x){ return x.id !== optimistic.id; });
+    renderAll();
+    toast(dbMsg(res.error));
+    return;
+  }
+  state.visits = [rowToVisit(res.data)].concat(
+    state.visits.filter(function(x){ return x.id !== optimistic.id; }));
+  renderAll();
+  if(v.outcome === "score") broadcastHit(v.storeId);
+}
+
+async function deleteVisit(id){
+  var v = state.visits.filter(function(x){ return x.id===id; })[0];
+  if(!v || v.owner !== state.me.key) return;
+  state.visits = state.visits.filter(function(x){ return x.id!==id; });
+  renderAll();
+  var res = await sb.from("visits").delete().eq("id", id);
+  if(res.error){ toast(dbMsg(res.error)); refetch("visits"); }
+}
+
+function dbMsg(err){
+  var m = (err && (err.message || err.error_description)) || "";
+  if(/row-level security|violates row-level/i.test(m))
+    return "The server wouldn't accept that — your account may not be on the crew list.";
+  if(/JWT|token|expired/i.test(m)) return "Your sign-in expired. Reload the page to sign back in.";
+  if(/Failed to fetch|NetworkError/i.test(m)) return "No connection. Nothing was saved — try again when you're back online.";
+  if(/duplicate key/i.test(m)) return "That already exists.";
+  return "Couldn't save that. " + (m || "Please try again.");
+}
+
+/* ============================================================
+   Tips
+   ============================================================ */
+function tipsFor(scope){
+  return state.tips.filter(function(t){ return t.scope===scope; })
+    .sort(function(a,b){ return (b.at||0)-(a.at||0); });
+}
+function scopeLabel(scope){
+  if(scope==="general") return "General";
+  var p = scope.split(":");
+  if(p[0]==="store"){ var s = storeById(p[1]); return s ? s.name : "Unknown store"; }
+  if(p[0]==="chain"){ return (CHAINS[p[1]]||CHAINS.other).name + " — all stores"; }
+  return scope;
+}
+function tipToRow(t){
+  return { id:t.id, scope:t.scope, body:t.text, photo:t.photo||null,
+           confirms:t.confirms||[], user_id:t.byKey==="seed"?null:t.byKey,
+           user_name:t.by||"Anonymous" };
+}
+function rowToTip(r){
+  return { id:r.id, scope:r.scope, text:r.body, photo:r.photo||null,
+           confirms:r.confirms||[], byKey:r.user_id, by:r.user_name,
+           at: r.created_at ? new Date(r.created_at).getTime() : 0 };
+}
+async function saveTip(tip){
+  var i = -1;
+  for(var j=0;j<state.tips.length;j++){ if(state.tips[j].id===tip.id) i=j; }
+  if(i>-1) state.tips[i] = tip; else state.tips = state.tips.concat([tip]);
+  renderTips(); renderStoresTab(); renderIntel();
+  var res = await sb.from("tips").upsert(tipToRow(tip)).select().single();
+  if(res.error){ toast(dbMsg(res.error)); refetch("tips"); }
+}
+async function removeTip(id){
+  state.tips = state.tips.filter(function(t){ return t.id!==id; });
+  renderTips(); renderStoresTab(); renderIntel();
+  var res = await sb.from("tips").delete().eq("id", id);
+  if(res.error){ toast(dbMsg(res.error)); refetch("tips"); }
+}
+function tipById(id){
+  for(var i=0;i<state.tips.length;i++){ if(state.tips[i].id===id) return state.tips[i]; }
+  return null;
+}
+// Photos are usually an uploaded asset id, but a seeded entry can carry a full
+// URL or an inline data: image. Accept all three.
+var signedCache = {};
+function photoSrc(p){
+  if(!p) return null;
+  if((/^(data:|https?:)/).test(p)) return p;
+  var c = signedCache[p];
+  return (c && c.exp > Date.now()) ? c.url : null;
+}
+// Photos live in a private bucket, so each one needs a short-lived signed URL.
+// Render emits <img data-photo>, then this fills the src in once the URLs land.
+async function hydratePhotos(){
+  if(!sb) return;
+  var els = Array.prototype.slice.call(document.querySelectorAll("img[data-photo]"));
+  var need = [];
+  els.forEach(function(el){
+    var p = el.getAttribute("data-photo");
+    if(!p || (/^(data:|https?:)/).test(p)) return;
+    if(!photoSrc(p) && need.indexOf(p) === -1) need.push(p);
+  });
+  if(need.length){
+    try{
+      var r = await sb.storage.from("hauls").createSignedUrls(need, 3600);
+      (r.data||[]).forEach(function(x){
+        if(x && x.signedUrl && !x.error)
+          signedCache[x.path] = {url:x.signedUrl, exp: Date.now() + 50*60*1000};
+      });
+    }catch(e){}
+  }
+  els.forEach(function(el){
+    var u = photoSrc(el.getAttribute("data-photo"));
+    if(u && el.getAttribute("src") !== u) el.setAttribute("src", u);
+  });
+}
+
+function tipHTML(t, withScope){
+  var n = (t.confirms||[]).length;
+  var mine = (t.confirms||[]).indexOf(state.me.key) > -1;
+  var when = t.at ? new Date(t.at).toLocaleDateString([], {month:"short", day:"numeric"}) : "";
+  return '<div class="tip"><div class="txt">'+
+    (withScope ? '<div class="lbl" style="margin-bottom:2px">'+esc(scopeLabel(t.scope))+'</div>' : '')+
+    esc(t.text)+
+    ' <span class="meta">— '+esc(t.by||"someone")+(when?", "+esc(when):"")+'</span>'+
+    ' <button class="verdict'+(n?" confirmed":"")+'" data-confirm="'+esc(t.id)+'" '+
+      'title="'+(mine?"Remove your confirmation":"Confirm you\'ve seen this hold up")+'">'+
+      (n ? "confirmed ×"+n : "confirm") + '</button>'+
+    (t.byKey===state.me.key ? ' <button class="iconbtn" data-deltip="'+esc(t.id)+'" aria-label="Delete tip">&#10005;</button>' : '')+
+    (t.photo ? '<img class="shot" data-photo="'+esc(t.photo)+'" src="'+esc(photoSrc(t.photo)||"")+'" alt="Photo attached to this tip" loading="lazy">' : '')+
+  '</div></div>';
+}
+function renderTips(){
+  var el = $("tipFeed"); if(!el) return;
+  if(!state.tips.length){
+    el.innerHTML = '<div class="empty-state"><strong>No tips yet</strong>'+
+      'Anything a stocker tells you, a truck day you confirm, a store that stopped carrying cards — put it here and everyone on the link has it.</div>';
+    return;
+  }
+  var sorted = state.tips.slice().sort(function(a,b){ return (b.at||0)-(a.at||0); });
+  el.innerHTML = '<div class="tips" style="padding-left:0">'+
+    sorted.map(function(t){ return tipHTML(t, true); }).join("")+'</div>';
+}
+
+/* ============================================================
+   Stats
+   ============================================================ */
+function statsFor(filterStoreId){
+  var grid = {}, byStore = {}, byDay = {}, untimed = 0;
+  var visits = allVisits();
+  for(var i=0;i<visits.length;i++){
+    var v = visits[i];
+    var d = new Date(v.ts);
+    if(isNaN(d)) continue;
+    var good = (v.outcome==="score" || v.outcome==="stock");
+    if(!byStore[v.storeId]) byStore[v.storeId] = {n:0,good:0,last:null};
+    byStore[v.storeId].n++; if(good) byStore[v.storeId].good++;
+    if(!byStore[v.storeId].last || d > byStore[v.storeId].last) byStore[v.storeId].last = d;
+    if(filterStoreId!=="all" && v.storeId!==filterStoreId) continue;
+
+    // Day-of-week roll-up uses EVERY visit, including ones with no time recorded.
+    var day = d.getDay();
+    if(!byDay[day]) byDay[day] = {n:0,good:0};
+    byDay[day].n++; if(good) byDay[day].good++;
+
+    // Visits with no recorded time get their own column rather than vanishing.
+    if(v.noTime){ untimed++; }
+    var key = day+"|"+(v.noTime ? "none" : bucketOf(d.getHours()));
+    if(!grid[key]) grid[key] = {n:0,good:0};
+    grid[key].n++; if(good) grid[key].good++;
+  }
+  return {grid:grid, byStore:byStore, byDay:byDay, untimed:untimed, total:visits.length};
+}
+
+function heatColor(rate, n){
+  if(!n) return null;
+  var a = Math.min(1, 0.16 + rate*0.84);
+  return "color-mix(in srgb, var(--hit) "+Math.round(a*100)+"%, var(--sunk))";
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+var $ = function(id){ return document.getElementById(id); };
+
+var TABS = [
+  {k:"home",  label:"Home"},
+  {k:"run",   label:"Run"},
+  {k:"log",   label:"Log"},
+  {k:"feed",  label:"Feed"},
+  {k:"heat",  label:"Heat"},
+  {k:"stores",label:"Stores"},
+  {k:"intel", label:"Intel"}
+];
+
+function renderTabs(){
+  var visits = allVisits();
+  var counts = {feed: visits.length, stores: allStores().length, run: state.run.stopIds.length,
+                intel: state.tips.length};
+  $("tabs").innerHTML = TABS.map(function(t){
+    var c = counts[t.k];
+    return '<button class="tab" role="tab" data-tab="'+t.k+'" aria-selected="'+(state.tab===t.k)+'">'+
+      t.label + (c ? '<span class="cnt">'+c+'</span>' : '') + '</button>';
+  }).join("");
+  TABS.forEach(function(t){
+    var el = $("tab-"+t.k);
+    if(el) el.hidden = (state.tab !== t.k);
+  });
+  // The hero already says what day it is and who's out — don't say it twice.
+  $("nowStrip").hidden = (state.tab === "home");
+}
+
+function avatarHTML(name, color, cls){
+  return '<div class="avatar'+(cls?" "+cls:"")+'" style="background:'+esc(color||"#6A757D")+'">'+esc(initials(name))+'</div>';
+}
+
+function renderMe(){
+  var m = state.me;
+  $("meAvatar").style.background = m.color;
+  $("meAvatar").textContent = m.name ? initials(m.name) : "–";
+  $("meBtn").textContent = m.name || "set name";
+}
+
+function renderNow(){
+  var now = new Date();
+  var dow = now.getDay(), bk = bucketOf(now.getHours());
+  var bl = BUCKETS.filter(function(b){ return b.k===bk; })[0];
+  var s = statsFor("all");
+
+  // rank stores by performance in this exact day+bucket, then by overall
+  var ranked = [];
+  var visits = allVisits();
+  var cell = {};
+  visits.forEach(function(v){
+    if(v.noTime) return;
+    var d = new Date(v.ts); if(isNaN(d)) return;
+    if(d.getDay()!==dow || bucketOf(d.getHours())!==bk) return;
+    if(!cell[v.storeId]) cell[v.storeId]={n:0,good:0};
+    cell[v.storeId].n++; if(v.outcome==="score"||v.outcome==="stock") cell[v.storeId].good++;
+  });
+  for(var id in cell){
+    if(cell[id].n>=2) ranked.push({id:id, rate:cell[id].good/cell[id].n, n:cell[id].n});
+  }
+  ranked.sort(function(a,b){ return b.rate-a.rate || b.n-a.n; });
+  ranked = ranked.slice(0,3);
+
+  var picksHTML, lede;
+  if(ranked.length){
+    lede = "Best logged performance for this slot:";
+    picksHTML = ranked.map(function(r){
+      var st = storeById(r.id);
+      return '<span class="pick"><b>'+esc(st?st.name:r.id)+'</b><span>'+Math.round(r.rate*100)+'% · n'+r.n+'</span></span>';
+    }).join("");
+  } else {
+    lede = "Not enough logged visits for this slot yet — baseline guidance:";
+    var baseline;
+    if(dow===1 && (bk==="pre"||bk==="am"||bk==="mid")){
+      baseline = ["Best Buy — reported Monday restock","Target — at open, expect a line","Walmart — first hour after open"];
+      lede = "Monday. Test the Best Buy claim before anything else:";
+    }
+    else if(dow===5 && (bk==="pre"||bk==="am")){
+      baseline = ["Target St. Matthews — opens 7am","Target Springhurst — opens 8am, reported deepest","Best Buy — opens 10am, expect a line"];
+      lede = "Friday, early. Run the ladder — St. Matthews at 7, Springhurst at 8:";
+    }
+    else if(dow===5){
+      baseline = ["Target Middletown","Target Jeffersontown (Hurstbourne)","Log whatever's left — misses matter here"];
+      lede = "Friday. The reported Target day, but the 7am window has passed:";
+    }
+    else if(dow===4){
+      baseline = ["Walmart #6931 — 4840 Outer Loop","Walmart #5417 — 175 Outer Loop","Walmart #5418 — Bashford Manor"];
+      lede = "Thursday — the reported stocking day for Outer Loop and Bashford Manor. Log these either way:";
+    }
+    else if(bk==="pre"||bk==="am") baseline = ["Target — right at open","Walmart — first hour after open","Best Buy — opens 10am"];
+    else if(bk==="mid") baseline = ["Dollar General — day after truck","Five Below — midday truck day","Kroger / pharmacy racks"];
+    else if(bk==="pm") baseline = ["Ask the counter, don't trust bare pegs","Five Below","GameStop"];
+    else baseline = ["Walmart — late-evening peg work happens","Plan tomorrow's route instead","Check the release calendar"];
+    picksHTML = baseline.map(function(b){ return '<span class="pick"><b>'+esc(b)+'</b></span>'; }).join("");
+  }
+
+  var peersHTML;
+  if(state.peers.length){
+    peersHTML = state.peers.map(function(p){
+      return '<span class="peerchip">'+avatarHTML(p.name,p.color)+esc(p.name)+
+        ' <span class="dim" style="font-size:11.5px">'+esc(p.status||"out")+'</span></span>';
+    }).join("");
+  } else {
+    peersHTML = '<span class="dim">'+(liveChannel ? "Nobody else on right now." : "Connecting…")+'</span>';
+  }
+
+  $("nowStrip").innerHTML =
+    '<div class="now-clock"><div class="d">'+DAYS[dow]+'</div><div class="b">'+bl.label.toUpperCase()+' · '+
+      now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})+'</div></div>'+
+    '<div class="now-body"><div class="lede">'+esc(lede)+'</div><div class="picks">'+picksHTML+'</div></div>'+
+    '<div class="now-live"><div class="lbl">Out right now</div><div class="peers">'+peersHTML+'</div>'+
+      '<div class="lbl" style="margin-top:2px">'+s.total+' visits logged</div></div>';
+}
+
+/* ---------- HOME ---------- */
+var QUESTIONS = [
+  { id:"fri", title:"Friday at the East End Targets", dow:5, routeName:"Friday ladder",
+    stores:["tgt-stmatthews","tgt-springhurst","tgt-middletown","tgt-jtown"],
+    claim:"Four stores reported as Friday, and both dated sightings so far were Fridays. The strongest claim on the board — and the one that contradicts “no set days.”" },
+  { id:"mon", title:"Monday at Best Buy", dow:1, routeName:"Monday test",
+    stores:["bby-stmatthews","bby-outerloop"],
+    claim:"Reported chain-wide. Only two stores in the city, so a full sweep is about twenty minutes — the cheapest of the three to test." },
+  { id:"thu", title:"Thursday on Outer Loop & Bashford", dow:4, routeName:"Thursday test",
+    stores:["wmt-5417","wmt-6931","wmt-5418","tgt-bashford"],
+    claim:"Reported for those two intersections without naming the chain, so both the Walmarts and the Target are tagged." }
+];
+
+function questionStats(q){
+  var n = 0, good = 0, onDay = 0;
+  allVisits().forEach(function(v){
+    if(q.stores.indexOf(v.storeId)===-1) return;
+    var d = new Date(v.ts); if(isNaN(d)) return;
+    n++;
+    if(d.getDay()===q.dow){ onDay++; if(v.outcome==="score"||v.outcome==="stock") good++; }
+  });
+  return {n:n, onDay:onDay, good:good};
+}
+
+function renderHome(){
+  var now = new Date(), dow = now.getDay();
+  var visits = allVisits();
+  var people = {}; visits.forEach(function(v){ people[v.owner]=1; });
+  var stores = {}; visits.forEach(function(v){ stores[v.storeId]=1; });
+
+  var todayQ = QUESTIONS.filter(function(q){ return q.dow===dow; })[0];
+  $("heroDay").textContent = DAYS[dow];
+  $("heroLine").textContent = todayQ
+    ? "It's the day for " + todayQ.title.toLowerCase() + ". Whatever you find, log it — a miss today is worth as much as a hit."
+    : "No standing hypothesis for today. Good day to fill in a gap: pick a store with no data and a time slot nobody has covered.";
+
+  var acts = '<button class="btn primary" data-go="log">Log a stop</button>';
+  if(todayQ){
+    var r = state.routes.filter(function(x){ return x.name.indexOf(todayQ.routeName)===0; })[0];
+    if(r) acts += '<button class="btn" data-loadroute="'+esc(r.id)+'">Load the '+esc(todayQ.routeName)+' route</button>';
+  }
+  acts += '<button class="btn ghost" data-go="heat">See the patterns</button>';
+  $("heroActions").innerHTML = acts;
+
+  $("heroStats").innerHTML =
+    (state.peers.length
+      ? '<div><div class="lbl" style="margin-bottom:5px">Out right now</div><div class="peers">'+
+        state.peers.map(function(p){
+          return '<span class="peerchip">'+avatarHTML(p.name,p.color)+esc(p.name)+
+            ' <span class="dim" style="font-size:11.5px">'+esc(p.status||"out")+'</span></span>';
+        }).join("")+'</div></div>'
+      : '')+
+    '<div class="stat"><b>'+visits.length+'</b><span>visits logged</span></div>'+
+    '<div class="stat"><b>'+Object.keys(stores).length+'</b><span>of '+allStores().length+' stores covered</span></div>'+
+    '<div class="stat"><b>'+Math.max(1,Object.keys(people).length)+'</b><span>'+
+      (Object.keys(people).length===1?"person":"people")+' contributing</span></div>'+
+    '<div class="stat"><b>'+state.tips.length+'</b><span>local tips on file</span></div>';
+
+  $("questions").innerHTML = QUESTIONS.map(function(q){
+    var st = questionStats(q);
+    var cls = st.onDay>=6 ? "live" : st.onDay>0 ? "thin" : "";
+    var label = st.onDay>=6
+      ? Math.round(st.good/st.onDay*100)+"% over "+st.onDay+" visits"
+      : st.onDay>0 ? st.onDay+" of ~6 visits in" : "untested";
+    var route = state.routes.filter(function(x){ return x.name.indexOf(q.routeName)===0; })[0];
+    return '<div class="qcard">'+
+      '<span class="qstatus '+cls+'">'+esc(label)+'</span>'+
+      '<h4>'+esc(q.title)+'</h4>'+
+      '<p>'+esc(q.claim)+'</p>'+
+      '<div class="btnrow">'+
+        (route ? '<button class="btn sm" data-loadroute="'+esc(route.id)+'">Load route</button>' : '')+
+        '<button class="btn sm ghost" data-heatday="'+q.dow+'">See '+DAYS_S[q.dow]+' data</button>'+
+      '</div></div>';
+  }).join("");
+
+  var recent = visits.slice(0,4);
+  $("homeFeed").innerHTML = recent.length ? recent.map(function(v){
+    var st = storeById(v.storeId);
+    var oc = OUTCOMES.filter(function(o){ return o.k===v.outcome; })[0] || OUTCOMES[2];
+    return '<div class="ev">'+avatarHTML(v.who, v.color)+
+      '<div class="body"><div class="line1"><span class="who">'+esc(v.who)+'</span>'+
+      '<span class="tag '+oc.k+'">'+esc(oc.label)+'</span>'+
+      '<span class="when">'+esc(v.noTime
+        ? new Date(v.ts).toLocaleDateString([], {month:"short", day:"numeric"})+" · time unknown"
+        : timeAgo(v.ts))+'</span></div>'+
+      '<div style="font-size:13.5px;color:var(--text-2)">'+esc(st?st.name:"Unknown store")+'</div>'+
+      '</div></div>';
+  }).join("") : '<div class="empty-state"><strong>Nothing logged yet</strong>'+
+      'The first stop anyone logs shows up here for everyone.</div>';
+
+  var today0 = new Date(); today0.setHours(0,0,0,0);
+  var upcoming = CALENDAR.filter(function(c){ return new Date(c.date+"T00:00:00") >= today0; }).slice(0,4);
+  $("homeCal").innerHTML = (upcoming.length ? upcoming : CALENDAR.slice(-3)).map(function(c){
+    var d = new Date(c.date+"T00:00:00");
+    var days = Math.round((d-today0)/86400000);
+    return '<div class="calrow '+(days<0?"past":days<=10?"soon":"")+'">'+
+      '<div class="caldate">'+d.toLocaleDateString([],{month:"short",day:"numeric"})+
+      (days>=0?'<div style="font-weight:400;color:var(--muted);font-size:11px">'+
+        (days===0?"today":days===1?"tomorrow":"in "+days+" days")+'</div>':'')+'</div>'+
+      '<div class="calbody"><div class="calname">'+esc(c.name)+'</div></div></div>';
+  }).join("");
+}
+
+/* ---------- RUN ---------- */
+function renderRun(){
+  var stops = state.run.stopIds;
+  var doneCount = stops.filter(function(id){ return state.run.done[id]; }).length;
+  $("runBar").style.width = (stops.length ? (doneCount/stops.length*100) : 0) + "%";
+  $("runTitle").textContent = state.run.name || "Today's run";
+  $("mapsBtn").disabled = stops.length < 1;
+
+  if(!stops.length){
+    $("runStops").innerHTML = '<div class="empty-state"><strong>No stops yet</strong>'+
+      'Add stores in the order you\'ll drive them, then hand the whole thing to Google Maps.</div>';
+  } else {
+    $("runStops").innerHTML = stops.map(function(id, i){
+      var st = storeById(id); if(!st) return "";
+      var c = chainOf(st);
+      var done = !!state.run.done[id];
+      return '<div class="stop'+(done?" done":"")+'">'+
+        '<div class="stopnum">'+(i+1)+'</div>'+
+        '<div class="flag" style="background:'+c.color+';color:'+(c.color2||"#fff")+'">'+esc(c.abbr)+'</div>'+
+        '<div class="grow"><div class="sname">'+esc(st.name)+'</div><div class="saddr">'+esc(st.addr)+'</div></div>'+
+        (st.opens ? '<span class="opensbadge">'+esc(st.opens)+'</span>' : '')+
+        (done ? '<span class="tag score">Logged</span>'
+              : '<button class="btn sm primary" data-logstop="'+esc(id)+'">Log</button>')+
+        '<button class="iconbtn" data-up="'+esc(id)+'" title="Move up" aria-label="Move up">&#9650;</button>'+
+        '<button class="iconbtn" data-rmstop="'+esc(id)+'" title="Remove" aria-label="Remove stop">&#10005;</button>'+
+      '</div>';
+    }).join("");
+  }
+
+  if(!state.routes.length){
+    $("routeList").innerHTML = '<div class="empty-state"><strong>No saved routes</strong>'+
+      'Build a run, then save it. Routes are shared — anyone with this link can load one.</div>';
+  } else {
+    $("routeList").innerHTML = '<div class="stops">'+state.routes.map(function(r){
+      return '<div class="stop">'+
+        '<div class="grow"><div class="sname">'+esc(r.name)+'</div>'+
+        '<div class="saddr">'+r.stopIds.length+' stops · by '+esc(r.by||"someone")+'</div></div>'+
+        '<button class="btn sm" data-loadroute="'+esc(r.id)+'">Load</button>'+
+        '<button class="iconbtn" data-delroute="'+esc(r.id)+'" title="Delete route" aria-label="Delete route">&#10005;</button>'+
+      '</div>';
+    }).join("")+'</div>';
+  }
+}
+
+function mapsUrl(ids){
+  var addrs = ids.map(function(id){ var s=storeById(id); return s && s.addr; }).filter(Boolean);
+  if(!addrs.length) return null;
+  var dest = encodeURIComponent(addrs[addrs.length-1]);
+  var way = addrs.slice(0,-1).map(encodeURIComponent).join("%7C");
+  var u = "https://www.google.com/maps/dir/?api=1&destination="+dest+"&travelmode=driving";
+  if(way) u += "&waypoints="+way;
+  return u;
+}
+
+/* ---------- store lists ---------- */
+function opensHTML(st){
+  return st.opens ? ' <span class="opens">opens ' + esc(st.opens) + '</span>' : '';
+}
+
+function storeRowHTML(st, stats, opts){
+  var c = chainOf(st);
+  var s = stats.byStore[st.id];
+  var right = "";
+  if(s && s.n){
+    var rate = s.good/s.n;
+    right = '<div class="smeta"><div class="rate" style="color:'+(rate>=.5?"var(--hit)":rate>0?"var(--text-2)":"var(--muted)")+'">'+
+      Math.round(rate*100)+'%</div><div class="nvis">'+s.n+' visit'+(s.n===1?"":"s")+'</div>'+
+      '<div class="bar"><i style="width:'+Math.round(rate*100)+'%"></i></div></div>';
+  } else {
+    right = '<div class="smeta"><div class="nvis">no data</div></div>';
+  }
+  return '<button class="srow" '+(opts.attr||"")+'="'+esc(st.id)+'">'+
+    '<div class="flag" style="background:'+c.color+';color:'+(c.color2||"#fff")+'">'+esc(c.abbr)+'</div>'+
+    '<div style="min-width:0"><div class="sname">'+esc(st.name)+'</div>'+
+    '<div class="saddr">'+esc(st.addr)+opensHTML(st)+'</div></div>'+ right + '</button>';
+}
+
+function filteredStores(chainF, q){
+  return allStores().filter(function(s){
+    if(chainF!=="all" && s.chain!==chainF) return false;
+    if(q){
+      var hay = (s.name+" "+s.addr).toLowerCase();
+      if(hay.indexOf(q.toLowerCase())===-1) return false;
+    }
+    return true;
+  });
+}
+
+function chainChipsHTML(active, attr){
+  var cs = usedChains();
+  return '<button class="chip" '+attr+'="all" aria-pressed="'+(active==="all")+'">All</button>'+
+    cs.map(function(k){
+      return '<button class="chip" '+attr+'="'+k+'" aria-pressed="'+(active===k)+'">'+esc(CHAINS[k].name)+'</button>';
+    }).join("");
+}
+
+function renderLogTab(){
+  var stats = statsFor("all");
+  $("chainFilter").innerHTML = chainChipsHTML(state.chainFilter, "data-cf");
+  var list = filteredStores(state.chainFilter, state.search);
+  $("logStoreList").innerHTML = list.length
+    ? list.map(function(s){ return storeRowHTML(s, stats, {attr:"data-pickstore"}); }).join("")
+    : '<div class="empty-state"><strong>Nothing matches</strong>Try a different filter.</div>';
+}
+
+function renderStoresTab(){
+  var stats = statsFor("all");
+  $("chainFilter2").innerHTML = chainChipsHTML(state.chainFilter2, "data-cf2");
+  var list = filteredStores(state.chainFilter2, "");
+  var zones = {core:"Jefferson County", indiana:"Southern Indiana", outer:"Outer ring — worth the drive on release week"};
+  var order = ["core","indiana","outer"];
+  var html = "";
+  order.forEach(function(z){
+    var inZone = list.filter(function(s){ return (s.zone||"core")===z; });
+    if(!inZone.length) return;
+    html += '<h3 style="font-family:Oswald,sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;'+
+      'color:var(--muted);font-weight:500;margin:16px 0 4px">'+esc(zones[z])+'</h3>';
+    html += '<div>'+inZone.map(function(s){
+      var ts = tipsFor("store:"+s.id);
+      var noteHTML = s.note ? '<div class="tips"><div class="tip"><div class="txt">'+esc(s.note)+'</div></div></div>' : "";
+      var tipsHTML = ts.length ? '<div class="tips">'+ts.map(function(t){ return tipHTML(t,false); }).join("")+'</div>' : "";
+      return '<div class="storeblock">'+
+        storeRowHTML(s, stats, {attr:"data-pickstore"}) + noteHTML + tipsHTML +
+        '<button class="addtip" data-tipstore="'+esc(s.id)+'">+ add a tip about this store</button></div>';
+    }).join("")+'</div>';
+  });
+  $("storeCatalog").innerHTML = html || '<div class="empty-state"><strong>Nothing matches</strong>Try a different filter.</div>';
+}
+
+/* ---------- FEED ---------- */
+function timeAgo(ts){
+  var d = new Date(ts), now = new Date(), s = (now-d)/1000;
+  if(s<60) return "just now";
+  if(s<3600) return Math.floor(s/60)+"m ago";
+  if(s<86400 && d.getDate()===now.getDate()) return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  return d.toLocaleDateString([],{month:"short",day:"numeric"})+" · "+d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+}
+
+function renderFeed(){
+  var visits = allVisits();
+  $("feedFilter").innerHTML =
+    '<button class="chip" data-ff="all" aria-pressed="'+(state.feedFilter==="all")+'">Everything</button>'+
+    '<button class="chip" data-ff="score" aria-pressed="'+(state.feedFilter==="score")+'">Hits only</button>'+
+    '<button class="chip" data-ff="mine" aria-pressed="'+(state.feedFilter==="mine")+'">Mine</button>';
+
+  var list = visits.filter(function(v){
+    if(state.feedFilter==="score") return v.outcome==="score";
+    if(state.feedFilter==="mine") return v.owner===state.me.key;
+    return true;
+  }).slice(0,80);
+
+  if(!list.length){
+    $("feed").innerHTML = '<div class="empty-state"><strong>Nothing logged yet</strong>'+
+      'Hit <em>Log a stop</em> and the feed, the heatmap and the store standings all start filling in together.</div>';
+    return;
+  }
+
+  $("feed").innerHTML = list.map(function(v){
+    var st = storeById(v.storeId);
+    var oc = OUTCOMES.filter(function(o){ return o.k===v.outcome; })[0] || OUTCOMES[2];
+    var brands = (v.brands||[]).length ? ' <span class="dim">· '+esc(v.brands.join(", "))+'</span>' : "";
+    var items = (v.items||[]).length
+      ? '<div class="haul">'+v.items.map(function(t){ return '<span class="haulitem">'+esc(t)+'</span>'; }).join("")+'</div>' : "";
+    var photo = v.photo ? '<img class="shot" data-photo="'+esc(v.photo)+'" src="'+esc(photoSrc(v.photo)||"")+'" alt="Haul photo" loading="lazy">' : "";
+    var note = v.note ? '<div class="note">'+esc(v.note)+'</div>' : "";
+    var del = v.owner===state.me.key
+      ? '<button class="iconbtn" data-delvisit="'+esc(v.id)+'" title="Delete" aria-label="Delete entry">&#10005;</button>' : "";
+    return '<div class="ev">'+avatarHTML(v.who, v.color)+
+      '<div class="body"><div class="line1"><span class="who">'+esc(v.who)+'</span>'+
+        '<span class="tag '+oc.k+'">'+esc(oc.label)+'</span>'+
+        '<span class="when">'+esc(v.noTime
+            ? new Date(v.ts).toLocaleDateString([], {weekday:"short", month:"short", day:"numeric", year:"numeric"})+" · time unknown"
+            : timeAgo(v.ts))+'</span>'+del+'</div>'+
+      '<div style="font-size:13.5px;color:var(--text-2)">'+esc(st?st.name:"Unknown store")+brands+'</div>'+
+      items+note+photo+'</div></div>';
+  }).join("");
+}
+
+/* ---------- HEAT ---------- */
+function renderHeat(){
+  var opts = '<option value="all">All stores combined</option>' +
+    allStores().map(function(s){
+      return '<option value="'+esc(s.id)+'"'+(state.heatScope===s.id?" selected":"")+'>'+esc(s.name)+'</option>';
+    }).join("");
+  $("heatScope").innerHTML = opts;
+  $("heatScope").value = state.heatScope;
+
+  var s = statsFor(state.heatScope);
+  var sel = state.heatSel;
+
+  // ---- day-of-week roll-up (uses untimed visits too) ----
+  var dayCells = "";
+  var best = 0;
+  for(var dd=0; dd<7; dd++){ if(s.byDay[dd] && s.byDay[dd].n) best = Math.max(best, s.byDay[dd].good/s.byDay[dd].n); }
+  for(var q=1; q<=7; q++){
+    var dnum = q%7;
+    var c2 = s.byDay[dnum];
+    var pct = c2 && c2.n ? Math.round(c2.good/c2.n*100) : null;
+    var isBest = pct!=null && best>0 && (c2.good/c2.n)===best;
+    var isSel = sel && sel.day===dnum && sel.bucket===null;
+    var nStores = c2 ? uniqueStoreCount(dnum, null) : 0;
+    dayCells += '<button class="daycell'+(isBest?" best":"")+(isSel?" sel":"")+(c2&&c2.n?"":" flat")+'" '+
+      'data-day="'+dnum+'"'+(c2&&c2.n?"":" disabled")+' aria-pressed="'+(isSel?"true":"false")+'">'+
+      '<span class="dl">'+DAYS_S[dnum]+'</span>'+
+      '<span class="dv">'+(pct==null ? "·" : pct+"%")+'</span>'+
+      '<span class="dn">'+(c2 && c2.n
+        ? c2.n+" visit"+(c2.n===1?"":"s")+" · "+nStores+" store"+(nStores===1?"":"s")
+        : "no data")+'</span></button>';
+  }
+  $("byDay").innerHTML =
+    '<div class="lbl" style="margin-bottom:7px">By day of week — every logged visit, including ones with no time recorded. '+
+    'Tap a day to see which stores.</div>'+
+    '<div class="dayrow">'+dayCells+'</div>';
+
+  var head = '<tr><th class="day"></th>'+COLS.map(function(b){
+    return '<th'+(b.k==="none"?' class="nocol"':'')+'>'+esc(b.label)+'</th>'; }).join("")+'</tr>';
+  var rows = "";
+  for(var d=1; d<=7; d++){
+    var day = d%7; // Mon..Sun
+    rows += '<tr><th class="day">'+DAYS_S[day]+'</th>';
+    COLS.forEach(function(b){
+      var cell = s.grid[day+"|"+b.k];
+      var selected = sel && sel.day===day && sel.bucket===b.k;
+      if(cell && cell.n){
+        var rate = cell.good/cell.n;
+        var bg = heatColor(rate, cell.n);
+        var strong = rate > .55;
+        rows += '<td><button class="cell'+(selected?" sel":"")+(b.k==="none"?" nocol":"")+'" '+
+          'data-cell="'+day+'|'+b.k+'" aria-pressed="'+(selected?"true":"false")+'" '+
+          'title="'+esc(DAYS[day]+", "+b.label+" — "+cell.n+" visit"+(cell.n===1?"":"s"))+'" '+
+          'style="background:'+bg+';'+(strong?"color:#08150f;":"")+'">'+
+          '<span class="pc">'+Math.round(rate*100)+'%</span><span class="n">'+cell.n+'</span></button></td>';
+      } else {
+        rows += '<td><div class="cell void'+(b.k==="none"?" nocol":"")+'"><span class="pc">·</span></div></td>';
+      }
+    });
+    rows += '</tr>';
+  }
+  $("heatTable").innerHTML = head + rows;
+  renderHeatDetail();
+
+  $("legendSw").innerHTML = [0,.25,.5,.75,1].map(function(r){
+    return '<span class="sw" style="background:'+heatColor(r,1)+'"></span>';
+  }).join("");
+
+  var rankRows = [];
+  for(var id in s.byStore){
+    var st = storeById(id); if(!st) continue;
+    rankRows.push({st:st, n:s.byStore[id].n, rate:s.byStore[id].good/s.byStore[id].n, last:s.byStore[id].last});
+  }
+  rankRows.sort(function(a,b){ return b.rate-a.rate || b.n-a.n; });
+  if(!rankRows.length){
+    $("standings").innerHTML = '<div class="empty-state"><strong>No visits logged yet</strong>'+
+      'Every logged stop — hit or miss — moves a store up or down this list.</div>';
+  } else {
+    $("standings").innerHTML = rankRows.map(function(r){
+      var c = chainOf(r.st);
+      return '<div class="srow" style="cursor:default">'+
+        '<div class="flag" style="background:'+c.color+';color:'+(c.color2||"#fff")+'">'+esc(c.abbr)+'</div>'+
+        '<div style="min-width:0"><div class="sname">'+esc(r.st.name)+'</div>'+
+        '<div class="saddr">last checked '+esc(timeAgo(r.last))+'</div></div>'+
+        '<div class="smeta"><div class="rate" style="color:'+(r.rate>=.5?"var(--hit)":"var(--text-2)")+'">'+
+        Math.round(r.rate*100)+'%</div><div class="nvis">'+r.n+' visit'+(r.n===1?"":"s")+'</div>'+
+        '<div class="bar"><i style="width:'+Math.round(r.rate*100)+'%"></i></div></div></div>';
+    }).join("");
+  }
+}
+
+/* ---------- heat: which stores, exactly ---------- */
+function visitsIn(day, bucket){
+  var scope = state.heatScope;
+  return allVisits().filter(function(v){
+    if(scope!=="all" && v.storeId!==scope) return false;
+    var d = new Date(v.ts); if(isNaN(d)) return false;
+    if(d.getDay()!==day) return false;
+    if(bucket===null) return true;
+    if(bucket==="none") return !!v.noTime;
+    if(v.noTime) return false;
+    return bucketOf(d.getHours())===bucket;
+  }).sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); });
+}
+function uniqueStoreCount(day, bucket){
+  var seen = {}, n = 0;
+  visitsIn(day, bucket).forEach(function(v){ if(!seen[v.storeId]){ seen[v.storeId]=1; n++; } });
+  return n;
+}
+function mapLink(st){
+  return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(st.addr) + "&travelmode=driving";
+}
+function renderHeatDetail(){
+  var el = $("heatDetail"); if(!el) return;
+  var sel = state.heatSel;
+  if(!sel){
+    el.innerHTML = '<div class="detail-empty">Tap any day above or any cell in the grid to see exactly which stores were confirmed, when, and by whom.</div>';
+    return;
+  }
+  var list = visitsIn(sel.day, sel.bucket);
+  var colLabel = sel.bucket===null ? "all day"
+    : (COLS.filter(function(c){ return c.k===sel.bucket; })[0] || {label:sel.bucket}).label;
+  var scopeName = state.heatScope==="all" ? "all stores"
+    : (storeById(state.heatScope) || {name:state.heatScope}).name;
+
+  // group by store, newest first
+  var order = [], byStore = {};
+  list.forEach(function(v){
+    if(!byStore[v.storeId]){ byStore[v.storeId] = []; order.push(v.storeId); }
+    byStore[v.storeId].push(v);
+  });
+
+  var body = order.map(function(sid){
+    var st = storeById(sid);
+    var vs = byStore[sid];
+    var good = vs.filter(function(v){ return v.outcome==="score"||v.outcome==="stock"; }).length;
+    var c = chainOf(st || {});
+    return '<div class="dstore">'+
+      '<div class="dhead">'+
+        '<div class="flag" style="background:'+c.color+';color:'+(c.color2||"#fff")+'">'+esc(c.abbr)+'</div>'+
+        '<div style="min-width:0;flex:1">'+
+          '<div class="sname">'+esc(st?st.name:"Unknown store")+'</div>'+
+          '<div class="saddr">'+esc(st?st.addr:"")+(st&&st.opens?opensHTML(st):"")+'</div>'+
+        '</div>'+
+        '<span class="dcount">'+good+' of '+vs.length+' had stock</span>'+
+      '</div>'+
+      (st ? '<div class="dactions">'+
+        '<a class="btn sm" href="'+esc(mapLink(st))+'" target="_blank" rel="noopener">Directions</a>'+
+        '<button class="btn sm ghost" data-copyaddr="'+esc(st.id)+'">Copy address</button>'+
+        '<button class="btn sm ghost" data-addstop="'+esc(st.id)+'">Add to run</button>'+
+      '</div>' : '')+
+      '<div class="dvisits">'+vs.map(function(v){
+        var oc = OUTCOMES.filter(function(o){ return o.k===v.outcome; })[0] || OUTCOMES[2];
+        var when = new Date(v.ts);
+        return '<div class="dvisit">'+
+          '<span class="tag '+oc.k+'">'+esc(oc.label)+'</span>'+
+          '<span class="dwhen">'+esc(when.toLocaleDateString([], {month:"short", day:"numeric", year:"numeric"}))+
+            (v.noTime ? ' · time unknown' : ' · '+when.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}))+'</span>'+
+          '<span class="dwho">'+esc(v.who)+'</span>'+
+          (v.note ? '<span class="dnote">'+esc(v.note)+'</span>' : '')+
+        '</div>';
+      }).join("")+'</div>'+
+    '</div>';
+  }).join("");
+
+  el.innerHTML =
+    '<div class="detail-h">'+
+      '<h3>'+esc(DAYS[sel.day])+' · '+esc(colLabel)+'</h3>'+
+      '<span class="dim">'+list.length+' visit'+(list.length===1?"":"s")+' at '+order.length+
+        ' store'+(order.length===1?"":"s")+' · '+esc(scopeName)+'</span>'+
+      '<button class="iconbtn" data-clearsel style="margin-left:auto" aria-label="Close">&#10005;</button>'+
+    '</div>'+
+    (sel.bucket==="none" ? '<p class="dim" style="margin:0 0 10px">These were logged with a date but no time, so they can\'t sit in a time column. They still count toward the day totals and store standings.</p>' : '')+
+    (body || '<div class="detail-empty">Nothing logged in this slot.</div>');
+}
+
+/* ---------- INTEL ---------- */
+function renderIntel(){
+  $("chainIntel").innerHTML = CHAIN_INTEL.map(function(ci){
+    var c = CHAINS[ci.chain];
+    var prioLabel = ci.prio==="a" ? "Primary" : ci.prio==="b" ? "Worth the stop" : "Low yield";
+    var reports = (ci.reports||[]).map(function(r){
+      return '<div class="report"><q>'+esc(r.text)+'</q>'+
+        '<span class="src">'+esc(r.src)+' · '+esc(r.when)+' · unverified</span></div>';
+    }).join("");
+    var live = tipsFor("chain:"+ci.chain);
+    var liveHTML = live.length
+      ? '<div class="tips" style="padding-left:0">'+live.map(function(t){ return tipHTML(t,false); }).join("")+'</div>' : "";
+    return '<div class="chaincard"><div class="chainhead">'+
+      '<div class="flag" style="background:'+c.color+';color:'+(c.color2||"#fff")+'">'+esc(c.abbr)+'</div>'+
+      '<h3>'+esc(c.name)+'</h3><span class="prio '+ci.prio+'">'+prioLabel+'</span></div>'+
+      '<div class="chainbody">'+ reports + ci.rows.map(function(r){
+        return '<dl class="kv"><dt>'+esc(r[0])+'</dt><dd>'+r[1]+'</dd></dl>';
+      }).join("") + liveHTML +
+      '<button class="addtip" style="padding-left:0" data-tipchain="'+esc(ci.chain)+'">+ add a tip about '+esc(c.name)+'</button>'+
+      '</div></div>';
+  }).join("");
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  $("calendar").innerHTML = CALENDAR.map(function(c){
+    var d = new Date(c.date+"T00:00:00");
+    var days = Math.round((d-today)/86400000);
+    var cls = days<0 ? "past" : days<=10 ? "soon" : "";
+    var when = days<0 ? "" : days===0 ? "today" : days===1 ? "tomorrow" : "in "+days+" days";
+    return '<div class="calrow '+cls+'"><div class="caldate">'+
+      d.toLocaleDateString([],{month:"short",day:"numeric"})+
+      (when?'<div style="font-weight:400;color:var(--muted);font-size:11px">'+when+'</div>':'')+'</div>'+
+      '<div class="calbody"><div class="calname">'+esc(c.name)+'</div>'+
+      '<div class="calnote">'+esc(c.note)+'</div></div></div>';
+  }).join("");
+}
+
+function renderAll(){
+  renderTabs(); renderMe(); renderNow(); renderHome(); renderRun();
+  renderLogTab(); renderStoresTab(); renderFeed(); renderHeat();
+  renderTips(); renderIntel();
+  if(typeof hydratePhotos === "function") hydratePhotos();
+}
+
+/* ============================================================
+   Modals
+   ============================================================ */
+function closeModal(){ $("modalRoot").innerHTML = ""; }
+
+function openModal(title, bodyHTML, footHTML){
+  $("modalRoot").innerHTML =
+    '<div class="scrim" data-scrim><div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(title)+'">'+
+    '<div class="modal-h"><h2>'+esc(title)+'</h2><div class="spacer" style="margin-left:auto"></div>'+
+    '<button class="iconbtn" data-close aria-label="Close">&#10005;</button></div>'+
+    '<div class="modal-b">'+bodyHTML+'</div>'+
+    (footHTML ? '<div class="modal-f">'+footHTML+'</div>' : '')+
+    '</div></div>';
+}
+
+var draft = null;
+
+function openLogModal(storeId){
+  var now = new Date();
+  var local = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  draft = {storeId:storeId||"", ts:local, outcome:"", brands:[], items:[], note:"", photo:null, uploading:false};
+
+  var storeOpts = '<option value="">Choose a store…</option>'+
+    allStores().map(function(s){
+      return '<option value="'+esc(s.id)+'"'+(draft.storeId===s.id?" selected":"")+'>'+esc(s.name)+'</option>';
+    }).join("");
+
+  openModal("Log a stop",
+    '<div class="field"><label for="lgStore">Store</label><select id="lgStore">'+storeOpts+'</select></div>'+
+    '<div class="field"><label for="lgTime">When</label><input type="datetime-local" id="lgTime" value="'+local+'">'+
+      '<label style="display:flex;align-items:center;gap:7px;font-size:12.8px;color:var(--muted);cursor:pointer">'+
+      '<input type="checkbox" id="lgNoTime" style="width:auto;margin:0"> I only know the date, not the time</label></div>'+
+    '<div class="field"><label>What happened</label><div class="outcomes" id="lgOutcomes">'+
+      OUTCOMES.map(function(o){
+        return '<button class="oc" data-o="'+o.k+'" aria-pressed="false"><span class="k">'+esc(o.label)+
+          '</span><span class="s">'+esc(o.sub)+'</span></button>';
+      }).join("")+'</div></div>'+
+    '<div class="field"><label>Games seen</label><div class="chips" id="lgBrands">'+
+      BRANDS.map(function(b){ return '<button class="chip" data-b="'+esc(b)+'" aria-pressed="false">'+esc(b)+'</button>'; }).join("")+
+    '</div></div>'+
+    '<div class="field" id="lgHaulWrap" hidden><label for="lgHaul">The haul — one item per line</label>'+
+      '<textarea id="lgHaul" placeholder="30th Celebration ETB x1&#10;Prismatic booster bundle&#10;Journey Together 3-pack blister x2"></textarea></div>'+
+    '<div class="field" id="lgPhotoWrap"><label>Photo</label>'+
+      '<div class="btnrow"><label class="btn sm" for="lgPhoto">Add a picture</label>'+
+      '<input type="file" id="lgPhoto" accept="image/*" class="sronly">'+
+      '<span class="dim" id="lgPhotoStatus">Optional</span></div>'+
+      '<div id="lgPhotoPrev"></div></div>'+
+    '<div class="field"><label for="lgNote">Note</label>'+
+      '<input type="text" id="lgNote" placeholder="e.g. asked at service desk — truck Tue &amp; Fri, cards out ~6am"></div>',
+    '<button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="lgSave">Save stop</button>'
+  );
+
+  var wrap = $("lgHaulWrap");
+  $("lgOutcomes").addEventListener("click", function(e){
+    var b = e.target.closest("[data-o]"); if(!b) return;
+    draft.outcome = b.getAttribute("data-o");
+    Array.prototype.forEach.call($("lgOutcomes").children, function(c){
+      c.setAttribute("aria-pressed", c===b ? "true" : "false");
+    });
+    wrap.hidden = (draft.outcome !== "score");
+  });
+  $("lgBrands").addEventListener("click", function(e){
+    var b = e.target.closest("[data-b]"); if(!b) return;
+    var v = b.getAttribute("data-b");
+    var i = draft.brands.indexOf(v);
+    if(i>-1) draft.brands.splice(i,1); else draft.brands.push(v);
+    b.setAttribute("aria-pressed", i>-1 ? "false" : "true");
+  });
+
+  if(false){
+    $("lgPhotoWrap").hidden = true;
+  } else {
+    $("lgPhoto").addEventListener("change", async function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      if(f.size > 20*1024*1024){ $("lgPhotoStatus").textContent = "Too big — 20MB max."; return; }
+      $("lgPhotoStatus").textContent = "Uploading…";
+      draft.uploading = true;
+      var up = await uploadPhoto(f);
+      draft.uploading = false;
+      if(up){
+        draft.photo = up.path;
+        $("lgPhotoStatus").textContent = "Attached";
+        $("lgPhotoPrev").innerHTML = '<img class="shot" src="'+esc(up.url)+'" alt="Haul photo preview">';
+      } else {
+        $("lgPhotoStatus").textContent = "Upload failed — save the stop without it.";
+      }
+    });
+  }
+
+  $("lgSave").addEventListener("click", async function(){
+    var sid = $("lgStore").value;
+    if(!sid){ toast("Pick a store first."); return; }
+    if(!draft.outcome){ toast("Pick what happened."); return; }
+    if(draft.uploading){ toast("Photo is still uploading."); return; }
+    var when = $("lgTime").value;
+    var d = when ? new Date(when) : new Date();
+    if(isNaN(d)) d = new Date();
+    var items = (wrap.hidden ? "" : $("lgHaul").value).split("\n")
+      .map(function(x){ return x.trim(); }).filter(Boolean).slice(0,25);
+    var noTime = $("lgNoTime").checked;
+    if(noTime) d.setHours(12,0,0,0);
+    var v = {
+      id: uid(), storeId: sid, ts: d.toISOString(), outcome: draft.outcome,
+      brands: draft.brands.slice(), items: items,
+      note: $("lgNote").value.trim().slice(0,300), photo: draft.photo
+    };
+    if(noTime) v.noTime = true;
+    closeModal();
+    if(state.run.stopIds.indexOf(sid) > -1){ state.run.done[sid] = true; saveRun(); }
+    await addVisit(v);
+    toast(v.outcome==="score" ? "Logged — nice pull." : "Stop logged.", v.outcome==="score");
+  });
+}
+
+function openNameModal(){
+  openModal("Who are you?",
+    '<div class="field"><label for="nmName">Display name</label>'+
+      '<input type="text" id="nmName" maxlength="24" value="'+esc(state.me.name)+'" placeholder="Mike"></div>'+
+    '<div class="field"><label>Your color</label><div class="chips" id="nmColors">'+
+      PALETTE.map(function(c){
+        return '<button class="chip" data-c="'+c+'" aria-pressed="'+(state.me.color===c)+'" '+
+          'style="background:'+c+';border-color:'+c+';width:34px;height:26px;padding:0"><span class="sronly">'+c+'</span></button>';
+      }).join("")+'</div></div>'+
+    '<p class="dim">This is how your stops show up to everyone else on this link. It lives on this device — no account needed.</p>',
+    '<button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="nmSave">Save</button>'
+  );
+  $("nmColors").addEventListener("click", function(e){
+    var b = e.target.closest("[data-c]"); if(!b) return;
+    state.me.color = b.getAttribute("data-c");
+    Array.prototype.forEach.call($("nmColors").children, function(c){
+      c.setAttribute("aria-pressed", c===b ? "true":"false");
+    });
+  });
+  $("nmSave").addEventListener("click", async function(){
+    var n = $("nmName").value.trim().slice(0,24);
+    state.me.name = n;
+    saveMe(); closeModal(); renderAll(); pushPresence();
+    // Rename every stop I've already logged, so the feed reads right for everyone.
+    var res = await sb.from("visits")
+      .update({user_name: n||"Anonymous", user_color: state.me.color})
+      .eq("user_id", state.me.key);
+    if(res.error) toast(dbMsg(res.error)); else refetch("visits");
+  });
+}
+
+function openAddStopModal(){
+  var stats = statsFor("all");
+  var list = allStores().filter(function(s){ return state.run.stopIds.indexOf(s.id)===-1; });
+  openModal("Add a stop",
+    '<input type="search" id="asSearch" placeholder="Filter…">'+
+    '<div class="storelist" id="asList">'+list.map(function(s){
+      return storeRowHTML(s, stats, {attr:"data-addstop"});
+    }).join("")+'</div>'
+  );
+  $("asSearch").addEventListener("input", function(){
+    var q = this.value.toLowerCase();
+    $("asList").innerHTML = list.filter(function(s){
+      return (s.name+" "+s.addr).toLowerCase().indexOf(q)>-1;
+    }).map(function(s){ return storeRowHTML(s, stats, {attr:"data-addstop"}); }).join("");
+  });
+}
+
+function openAddStoreModal(){
+  var chainOpts = Object.keys(CHAINS).map(function(k){
+    return '<option value="'+k+'">'+esc(CHAINS[k].name)+'</option>';
+  }).join("");
+  openModal("Add a store",
+    '<div class="field"><label for="nsChain">Chain</label><select id="nsChain">'+chainOpts+'</select></div>'+
+    '<div class="field"><label for="nsName">Name</label>'+
+      '<input type="text" id="nsName" placeholder="Dollar General — Fern Creek"></div>'+
+    '<div class="field"><label for="nsAddr">Address</label>'+
+      '<input type="text" id="nsAddr" placeholder="9500 Taylorsville Rd, Louisville, KY 40299"></div>'+
+    '<div class="field"><label for="nsZone">Area</label><select id="nsZone">'+
+      '<option value="core">Jefferson County</option><option value="indiana">Southern Indiana</option>'+
+      '<option value="outer">Outer ring</option></select></div>'+
+    '<p class="dim">Addresses feed the Maps handoff, so write them the way you\'d type them into Maps.</p>',
+    '<button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="nsSave">Add store</button>'
+  );
+  $("nsSave").addEventListener("click", async function(){
+    var name = $("nsName").value.trim(), addr = $("nsAddr").value.trim();
+    if(!name){ toast("Give it a name."); return; }
+    var st = {
+      id: "x-"+slug(name)+"-"+uid().slice(0,4),
+      chain: $("nsChain").value, name: name, addr: addr,
+      zone: $("nsZone").value, by: state.me.name || "someone"
+    };
+    state.customStores = state.customStores.concat([st]);
+    closeModal(); renderAll(); toast("Added "+name+".");
+    await saveStores(st);
+  });
+}
+
+var FAQ = [
+  ["What is this, in one sentence?",
+   "A shared logbook for the crew: everybody records every store they check — hits <em>and</em> misses — and the app turns those visits into a picture of which stores actually get product and when."],
+  ["Why does a day show 100% when the grid below it is empty?",
+   "Because that visit was logged with a date but no time. The day strip at the top counts every visit; the grid underneath sorts visits into time slots, and a visit with no time can't go in one. Those now land in the <strong>No time</strong> column on the far right of the grid, so nothing disappears. Tap any day or any cell to see exactly which visits are behind the number."],
+  ["What do the four outcomes mean?",
+   "<strong>Scored</strong> — you bought something. <strong>Stock out</strong> — product was on the peg but you passed or got there second. <strong>Empty</strong> — bare hooks. <strong>Locked</strong> — it's behind the counter or in a case. The hit rate you see everywhere is Scored plus Stock out, divided by all visits."],
+  ["Why should I log a store where I found nothing?",
+   "Because a map built only from wins is just a list of lucky days. “Empty at 3pm Wednesday” is what makes “stocked at 7am Friday” mean something. If everyone only logs hits, every cell reads 100% and the app is worthless."],
+  ["How many visits before I believe a number?",
+   "Roughly six in the same slot before it means anything, and three weeks of mixed times before a store's overall rate settles. Every percentage has its sample size printed under it for exactly this reason — a 100% built on one visit is noise."],
+  ["How do routes work?",
+   "Add stops in the order you'll drive them, then hit <strong>Open in Maps</strong> and the whole route goes to Google Maps with every stop as a waypoint. Save it and everyone on the link can load it. Each stop shows the store's opening time, which is the point of the Friday ladder — St. Matthews opens at 7, Springhurst at 8, so you can be first in line at both."],
+  ["What's a tip versus a visit?",
+   "A visit is one thing you saw with your own eyes on one day. A tip is standing knowledge — a truck day, a stocker's name, which shelf the cards live on. Tips sit on the store and on the chain page permanently. Anyone can hit <strong>confirm</strong> on one, which is how you tell a real pattern from something somebody heard once."],
+  ["Can I log something from last month?",
+   "Yes. Change the date in the log form, and if you don't remember the time, tick <em>I only know the date</em>. It'll count toward the day-of-week totals and the store's record without polluting the time grid."],
+  ["Who can see what I log?",
+   "Everyone with the link. Names come from whatever you typed in the top-right — there's no account, it's stored on your own device. You can delete your own entries; you can't delete anyone else's."],
+  ["How do I get a friend in?",
+   "If you're an admin you'll see <strong>Invite</strong> at the top right. Generate a code, send it to them, and they open the site, sign in with any email they like, and paste the code. You never have to ask for their address. Each code works once."],
+  ["A store is missing, or one of these is wrong.",
+   "Stores tab → <strong>Add a store</strong>. Write the address the way you'd type it into Maps, since that's what the route handoff uses. Added stores show up for the whole crew."],
+  ["Where did the Facebook stuff come from?",
+   "Screenshots from the Louisville collector group, seeded in as tips and marked <em>unverified</em> with whoever said it. Treat them as leads to test, not facts. The Intel tab explains where the reports agree, where they contradict each other, and which claim is worth testing first."]
+];
+
+function newInviteCode(){
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no O/0, no I/1
+  var out = "";
+  try{
+    var a = new Uint8Array(8);
+    window.crypto.getRandomValues(a);
+    for(var i=0;i<8;i++) out += chars[a[i] % chars.length];
+  }catch(e){
+    for(var j=0;j<8;j++) out += chars[Math.floor(Math.random()*chars.length)];
+  }
+  return "PACK-" + out.slice(0,4) + "-" + out.slice(4);
+}
+
+async function openInviteModal(){
+  openModal("Invite a friend",
+    '<p class="dim">Generate a code and send it to them. They open the site, sign in with any email they like, and paste the code. You never have to ask for their address.</p>'+
+    '<div id="ivNew"></div>'+
+    '<button class="btn primary" id="ivGen" style="justify-content:center;padding:11px">Generate a code</button>'+
+    '<div><div class="lbl" style="margin-bottom:7px">Codes you\'ve made</div>'+
+      '<div class="codelist" id="ivList"><span class="dim">Loading\u2026</span></div></div>',
+    '<button class="btn ghost" data-close>Done</button>'
+  );
+
+  async function refresh(){
+    var r = await sb.from("invite_codes").select("*").order("created_at", {ascending:false});
+    var el = $("ivList"); if(!el) return;
+    if(r.error){ el.innerHTML = '<span class="dim">'+esc(dbMsg(r.error))+'</span>'; return; }
+    var rows = r.data || [];
+    if(!rows.length){ el.innerHTML = '<span class="dim">None yet.</span>'; return; }
+    el.innerHTML = rows.map(function(c){
+      var spent = c.uses >= c.max_uses || !c.active;
+      return '<div class="coderow'+(spent?" spent":"")+'"><code>'+esc(c.code)+'</code>'+
+        '<span class="used">'+(spent ? "used" : "unused")+'</span>'+
+        (spent ? '' : '<button class="btn sm ghost" data-copycode="'+esc(c.code)+'">Copy</button>')+
+      '</div>';
+    }).join("");
+  }
+  refresh();
+
+  $("ivGen").addEventListener("click", async function(){
+    this.disabled = true; this.textContent = "Generating\u2026";
+    var code = newInviteCode();
+    var res = await sb.from("invite_codes").insert({code: code, max_uses: 1, created_by: state.me.key});
+    this.disabled = false; this.textContent = "Generate another";
+    if(res.error){ toast(dbMsg(res.error)); return; }
+    $("ivNew").innerHTML = '<div class="codebox">'+esc(code)+'</div>'+
+      '<div class="btnrow" style="margin-top:9px">'+
+      '<button class="btn sm" data-copycode="'+esc(code)+'">Copy code</button>'+
+      '<button class="btn sm ghost" data-copyinvite="'+esc(code)+'">Copy invite message</button></div>';
+    refresh();
+  });
+}
+
+function openFaqModal(){
+  openModal("How this works",
+    '<div class="faq">'+FAQ.map(function(f, i){
+      return '<details class="faqitem"'+(i===0?" open":"")+'><summary>'+esc(f[0])+'</summary>'+
+        '<div class="faqbody">'+f[1]+'</div></details>';
+    }).join("")+'</div>',
+    '<button class="btn primary" data-close>Got it</button>'
+  );
+}
+
+function openTipModal(scope){
+  var scopeOpts = '<option value="general">General — the whole area</option>'+
+    Object.keys(CHAINS).map(function(k){
+      return '<option value="chain:'+k+'"'+(scope==="chain:"+k?" selected":"")+'>'+esc(CHAINS[k].name)+' — all stores</option>';
+    }).join("")+
+    allStores().map(function(s){
+      return '<option value="store:'+esc(s.id)+'"'+(scope==="store:"+s.id?" selected":"")+'>'+esc(s.name)+'</option>';
+    }).join("");
+
+  openModal("Add a tip",
+    '<div class="field"><label for="tpScope">About</label><select id="tpScope">'+scopeOpts+'</select></div>'+
+    '<div class="field"><label for="tpText">What you know</label>'+
+      '<textarea id="tpText" maxlength="400" placeholder="Truck Tue &amp; Fri, stocker says cards go out around 6am. Ask for Danielle at the service desk."></textarea></div>'+
+    '<div class="field" id="tpPhotoWrap"><label>Photo</label>'+
+      '<div class="btnrow"><label class="btn sm" for="tpPhoto">Add a picture</label>'+
+      '<input type="file" id="tpPhoto" accept="image/*" class="sronly">'+
+      '<span class="dim" id="tpPhotoStatus">Optional — a shot of the aisle is worth a paragraph</span></div>'+
+      '<div id="tpPhotoPrev"></div></div>'+
+    '<p class="dim">Tips show up on the store and on the chain page for everyone with this link. Anyone can confirm one, which is how you tell a real pattern from something somebody heard once.</p>',
+    '<button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="tpSave">Post tip</button>'
+  );
+  if(scope) $("tpScope").value = scope;
+
+  var tipPhoto = null, tipUploading = false;
+  if(false){
+    $("tpPhotoWrap").hidden = true;
+  } else {
+    $("tpPhoto").addEventListener("change", async function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      if(f.size > 20*1024*1024){ $("tpPhotoStatus").textContent = "Too big — 20MB max."; return; }
+      $("tpPhotoStatus").textContent = "Uploading…";
+      tipUploading = true;
+      var up = await uploadPhoto(f);
+      tipUploading = false;
+      if(up){
+        tipPhoto = up.path;
+        $("tpPhotoStatus").textContent = "Attached";
+        $("tpPhotoPrev").innerHTML = '<img class="shot" src="'+esc(up.url)+'" alt="Tip photo preview">';
+      } else {
+        $("tpPhotoStatus").textContent = "Upload failed — post the tip without it.";
+      }
+    });
+  }
+
+  $("tpSave").addEventListener("click", async function(){
+    var txt = $("tpText").value.trim();
+    if(!txt){ toast("Write the tip first."); return; }
+    if(tipUploading){ toast("Photo is still uploading."); return; }
+    var tip = {
+      id: "t"+uid(), scope: $("tpScope").value, text: txt.slice(0,400),
+      by: state.me.name || "Anonymous", byKey: state.me.key, at: Date.now(), confirms: []
+    };
+    if(tipPhoto) tip.photo = tipPhoto;
+    closeModal();
+    await saveTip(tip);
+    toast("Tip posted.");
+  });
+}
+
+function openSaveRouteModal(){
+  if(!state.run.stopIds.length){ toast("Add some stops first."); return; }
+  openModal("Save this route",
+    '<div class="field"><label for="srName">Route name</label>'+
+      '<input type="text" id="srName" maxlength="40" placeholder="East End morning sweep" value="'+esc(state.run.name)+'"></div>'+
+    '<p class="dim">'+state.run.stopIds.length+' stops, in this order. Saved routes are shared with everyone on this link.</p>',
+    '<button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="srSave">Save route</button>'
+  );
+  $("srSave").addEventListener("click", async function(){
+    var n = $("srName").value.trim() || "Untitled route";
+    var r = {id:"r"+uid(), name:n, stopIds:state.run.stopIds.slice(), by: state.me.name||"someone", at: Date.now()};
+    state.routes = state.routes.concat([r]);
+    state.run.name = n; saveRun();
+    closeModal(); renderAll(); toast("Route saved.");
+    var res = await sb.from("routes").insert({
+      id:r.id, name:r.name, stop_ids:r.stopIds, user_id:state.me.key, user_name:r.by });
+    if(res.error){ toast(dbMsg(res.error)); refetch("routes"); }
+  });
+}
+
+function copyText(text, okMsg){
+  function fallback(){
+    try{
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly","");
+      ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+      var done = document.execCommand("copy"); ta.remove();
+      toast(done ? okMsg : text);
+    }catch(e){ toast(text); }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast(okMsg); }, fallback);
+  } else fallback();
+}
+
+function toast(msg, hit){
+  var el = document.createElement("div");
+  el.className = "toast" + (hit ? " hit" : "");
+  el.textContent = msg;
+  $("toasts").appendChild(el);
+  setTimeout(function(){ el.remove(); }, 3600);
+}
+
+/* ============================================================
+   Persistence for run / stores / routes
+   ============================================================ */
+function saveRun(){ lsSet("run", state.run); renderRun(); renderTabs(); }
+async function saveStores(st){
+  if(!st) return;
+  var res = await sb.from("stores").insert({
+    id:st.id, chain:st.chain, name:st.name, addr:st.addr||"",
+    zone:st.zone||"core", opens:st.opens||null, note:st.note||null, user_id:state.me.key
+  });
+  if(res.error){ toast(dbMsg(res.error)); refetch("stores"); }
+}
+
+/* ============================================================
+   Events
+   ============================================================ */
+document.addEventListener("click", function(e){
+  var t = e.target;
+
+  var tab = t.closest("[data-tab]");
+  if(tab){ state.tab = tab.getAttribute("data-tab"); renderTabs(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+
+  if(t.closest("[data-close]") || t.hasAttribute("data-scrim")){ closeModal(); return; }
+
+  if(t.closest("#fab")){ openLogModal(""); return; }
+  if(t.closest("#faqBtn")){ openFaqModal(); return; }
+  if(t.closest("#inviteBtn")){ openInviteModal(); return; }
+
+  var cc = t.closest("[data-copycode]");
+  if(cc){ copyText(cc.getAttribute("data-copycode"), "Code copied."); return; }
+  var ci = t.closest("[data-copyinvite]");
+  if(ci){
+    copyText("Pack Boys \u2014 Louisville restock tracker. Open " + location.origin +
+      ", sign in with your email, then paste this code: " + ci.getAttribute("data-copyinvite"),
+      "Invite message copied.");
+    return;
+  }
+
+  var go = t.closest("[data-go]");
+  if(go){ state.tab = go.getAttribute("data-go"); renderTabs(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+
+  var hd = t.closest("[data-heatday]");
+  if(hd){
+    state.heatSel = {day: parseInt(hd.getAttribute("data-heatday"),10), bucket: null};
+    state.tab = "heat"; state.heatScope = "all";
+    renderTabs(); renderHeat();
+    window.scrollTo({top:0,behavior:"smooth"});
+    return;
+  }
+  var dayBtn = t.closest("[data-day]");
+  if(dayBtn){
+    var dnum = parseInt(dayBtn.getAttribute("data-day"),10);
+    state.heatSel = (state.heatSel && state.heatSel.day===dnum && state.heatSel.bucket===null)
+      ? null : {day:dnum, bucket:null};
+    renderHeat(); return;
+  }
+  var cellBtn = t.closest("[data-cell]");
+  if(cellBtn){
+    var parts2 = cellBtn.getAttribute("data-cell").split("|");
+    var cd = parseInt(parts2[0],10), cb = parts2[1];
+    state.heatSel = (state.heatSel && state.heatSel.day===cd && state.heatSel.bucket===cb)
+      ? null : {day:cd, bucket:cb};
+    renderHeat(); return;
+  }
+  if(t.closest("[data-clearsel]")){ state.heatSel = null; renderHeat(); return; }
+
+  var ca = t.closest("[data-copyaddr]");
+  if(ca){
+    var cst = storeById(ca.getAttribute("data-copyaddr"));
+    if(cst && navigator.clipboard){
+      navigator.clipboard.writeText(cst.addr).then(function(){ toast("Address copied."); },
+        function(){ toast("Couldn't copy — the address is "+cst.addr); });
+    } else if(cst){ toast(cst.addr); }
+    return;
+  }
+  if(t.closest("#meBtn")){ openNameModal(); return; }
+  if(t.closest("#addStopBtn")){ openAddStopModal(); return; }
+  if(t.closest("#addStoreBtn")){ openAddStoreModal(); return; }
+  if(t.closest("#saveRouteBtn")){ openSaveRouteModal(); return; }
+  if(t.closest("#clearRunBtn")){ state.run = {name:"", stopIds:[], done:{}}; saveRun(); return; }
+  if(t.closest("#mapsBtn")){
+    var u = mapsUrl(state.run.stopIds);
+    if(u) window.open(u, "_blank", "noopener");
+    return;
+  }
+
+  var pick = t.closest("[data-pickstore]");
+  if(pick){ openLogModal(pick.getAttribute("data-pickstore")); return; }
+
+  var add = t.closest("[data-addstop]");
+  if(add){
+    var id = add.getAttribute("data-addstop");
+    if(state.run.stopIds.indexOf(id)===-1) state.run.stopIds.push(id);
+    closeModal(); state.tab="run"; saveRun(); renderTabs();
+    return;
+  }
+
+  var ls = t.closest("[data-logstop]");
+  if(ls){ openLogModal(ls.getAttribute("data-logstop")); return; }
+
+  var rm = t.closest("[data-rmstop]");
+  if(rm){
+    var rid = rm.getAttribute("data-rmstop");
+    state.run.stopIds = state.run.stopIds.filter(function(x){ return x!==rid; });
+    delete state.run.done[rid];
+    saveRun(); renderTabs(); return;
+  }
+
+  var up = t.closest("[data-up]");
+  if(up){
+    var uidv = up.getAttribute("data-up");
+    var i = state.run.stopIds.indexOf(uidv);
+    if(i>0){
+      state.run.stopIds.splice(i,1);
+      state.run.stopIds.splice(i-1,0,uidv);
+      saveRun();
+    }
+    return;
+  }
+
+  var lr = t.closest("[data-loadroute]");
+  if(lr){
+    var r = state.routes.filter(function(x){ return x.id===lr.getAttribute("data-loadroute"); })[0];
+    if(r){
+      state.run = {name:r.name, stopIds:r.stopIds.slice(), done:{}};
+      state.tab = "run"; saveRun(); renderTabs();
+      window.scrollTo({top:0,behavior:"smooth"});
+      toast('Loaded "'+r.name+'".');
+    }
+    return;
+  }
+
+  var dr = t.closest("[data-delroute]");
+  if(dr){
+    var did = dr.getAttribute("data-delroute");
+    state.routes = state.routes.filter(function(x){ return x.id!==did; });
+    renderRun();
+    sb.from("routes").delete().eq("id", did).then(function(res){
+      if(res.error){ toast(dbMsg(res.error)); refetch("routes"); } });
+    return;
+  }
+
+  var dv = t.closest("[data-delvisit]");
+  if(dv){ deleteVisit(dv.getAttribute("data-delvisit")); return; }
+
+  if(t.closest("#addTipBtn")){ openTipModal("general"); return; }
+  var tipS = t.closest("[data-tipstore]");
+  if(tipS){ openTipModal("store:"+tipS.getAttribute("data-tipstore")); return; }
+  var tipC = t.closest("[data-tipchain]");
+  if(tipC){ openTipModal("chain:"+tipC.getAttribute("data-tipchain")); return; }
+
+  var cfm = t.closest("[data-confirm]");
+  if(cfm){
+    var tp = tipById(cfm.getAttribute("data-confirm"));
+    if(tp){
+      var list = (tp.confirms||[]).slice();
+      var idx = list.indexOf(state.me.key);
+      if(idx>-1) list.splice(idx,1); else list.push(state.me.key);
+      saveTip(Object.assign({}, tp, {confirms:list}));
+    }
+    return;
+  }
+  var dtp = t.closest("[data-deltip]");
+  if(dtp){ removeTip(dtp.getAttribute("data-deltip")); return; }
+
+  var cf = t.closest("[data-cf]");
+  if(cf){ state.chainFilter = cf.getAttribute("data-cf"); renderLogTab(); return; }
+  var cf2 = t.closest("[data-cf2]");
+  if(cf2){ state.chainFilter2 = cf2.getAttribute("data-cf2"); renderStoresTab(); return; }
+  var ff = t.closest("[data-ff]");
+  if(ff){ state.feedFilter = ff.getAttribute("data-ff"); renderFeed(); return; }
+});
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") closeModal();
+});
+
+$("storeSearch").addEventListener("input", function(){ state.search = this.value; renderLogTab(); });
+$("heatScope").addEventListener("change", function(){ state.heatScope = this.value; renderHeat(); });
+
+/* ============================================================
+   Presence
+   ============================================================ */
+var liveChannel = null;
+function pushPresence(){
+  if(!liveChannel) return;
+  try{
+    liveChannel.track({
+      name: state.me.name || "Anonymous",
+      color: state.me.color,
+      status: state.run.stopIds.length
+        ? (Object.keys(state.run.done).length + "/" + state.run.stopIds.length + " stops")
+        : "browsing"
+    });
+  }catch(e){}
+}
+function broadcastHit(storeId){
+  if(!liveChannel) return;
+  try{
+    liveChannel.send({type:"broadcast", event:"hit",
+      payload:{who: state.me.name||"Someone", storeId: storeId}});
+  }catch(e){}
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+// ============================================================
+//  Supabase: sign-in, loading, and live updates
+// ============================================================
+var AUTH_USER = null, IS_ADMIN = false;
+
+function gateView(name){
+  var shell = document.querySelector(".shell"), top = document.querySelector(".top"),
+      fab = $("fab");
+  [shell, top, fab].forEach(function(el){ if(el) el.hidden = !!name; });
+  ["gateLoading","gateSignin","gateSent","gateDenied","gateError"].forEach(function(id){
+    var el = $(id); if(el) el.hidden = (id !== name);
+  });
+  $("gate").hidden = !name;
+  document.body.classList.toggle("gated", !!name);
+}
+
+async function uploadPhoto(file){
+  try{
+    var ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+    var path = state.me.key + "/" + Date.now() + "-" + uid() + "." + (ext || "jpg");
+    var up = await sb.storage.from("hauls").upload(path, file, {contentType: file.type || "image/jpeg"});
+    if(up.error) return null;
+    var signed = await sb.storage.from("hauls").createSignedUrl(path, 3600);
+    if(signed.data && signed.data.signedUrl)
+      signedCache[path] = {url: signed.data.signedUrl, exp: Date.now() + 50*60*1000};
+    return {path: path, url: (signed.data && signed.data.signedUrl) || ""};
+  }catch(e){ return null; }
+}
+
+var refetchTimers = {};
+function refetch(table){
+  clearTimeout(refetchTimers[table]);
+  refetchTimers[table] = setTimeout(function(){ loadTable(table); }, 250);
+}
+
+async function loadTable(table){
+  if(table === "visits"){
+    var r = await sb.from("visits").select("*").order("ts", {ascending:false}).limit(5000);
+    if(!r.error){ state.visits = (r.data||[]).map(rowToVisit); renderAll(); hydratePhotos(); }
+  } else if(table === "tips"){
+    var r2 = await sb.from("tips").select("*");
+    if(!r2.error){
+      state.tips = (r2.data||[]).map(rowToTip);
+      renderTips(); renderStoresTab(); renderIntel(); renderHome(); renderTabs(); hydratePhotos();
+    }
+  } else if(table === "routes"){
+    var r3 = await sb.from("routes").select("*").order("created_at", {ascending:false});
+    if(!r3.error){
+      state.routes = (r3.data||[]).map(function(x){
+        return {id:x.id, name:x.name, stopIds:x.stop_ids||[], by:x.user_name,
+                at: x.created_at ? new Date(x.created_at).getTime() : 0};
+      });
+      renderRun(); renderHome();
+    }
+  } else if(table === "stores"){
+    var r4 = await sb.from("stores").select("*");
+    if(!r4.error){
+      state.customStores = (r4.data||[]).map(function(x){
+        return {id:x.id, chain:x.chain, name:x.name, addr:x.addr, zone:x.zone,
+                opens:x.opens||undefined, note:x.note||undefined};
+      });
+      renderAll();
+    }
+  }
+}
+
+function subscribeLive(){
+  sb.channel("packboys-db")
+    .on("postgres_changes", {event:"*", schema:"public", table:"visits"}, function(){ refetch("visits"); })
+    .on("postgres_changes", {event:"*", schema:"public", table:"tips"},   function(){ refetch("tips"); })
+    .on("postgres_changes", {event:"*", schema:"public", table:"routes"}, function(){ refetch("routes"); })
+    .on("postgres_changes", {event:"*", schema:"public", table:"stores"}, function(){ refetch("stores"); })
+    .subscribe();
+
+  liveChannel = sb.channel("packboys-live", {config:{presence:{key: state.me.key}}});
+  liveChannel.on("presence", {event:"sync"}, function(){
+    var st = liveChannel.presenceState() || {};
+    var out = [];
+    Object.keys(st).forEach(function(k){
+      if(k === state.me.key) return;
+      var entry = (st[k]||[])[0];
+      if(entry && entry.name) out.push(entry);
+    });
+    state.peers = out;
+    renderNow(); renderHome();
+  });
+  liveChannel.on("broadcast", {event:"hit"}, function(m){
+    var d = (m && m.payload) || {};
+    if(!d.who) return;
+    var store = storeById(d.storeId);
+    toast(d.who + " just scored at " + (store ? store.name : "a store"), true);
+  });
+  liveChannel.subscribe(function(status){ if(status === "SUBSCRIBED") pushPresence(); });
+  setInterval(pushPresence, 45000);
+}
+
+async function startApp(){
+  initMe();
+  state.run = lsGet("run", {name:"", stopIds:[], done:{}});
+  if(!state.run.done) state.run.done = {};
+  renderAll();
+  $("inviteBtn").hidden = !IS_ADMIN;
+  gateView(null);
+  await Promise.all([loadTable("stores"), loadTable("visits"), loadTable("tips"), loadTable("routes")]);
+  hydratePhotos();
+  subscribeLive();
+  setInterval(renderNow, 60000);
+  if(!state.me.name) setTimeout(openNameModal, 400);
+}
+
+async function boot(){
+  gateView("gateLoading");
+  if(!window.PACKBOYS || !window.PACKBOYS.url || !window.PACKBOYS.key){
+    $("gateErrorMsg").textContent = "config.js is missing the project URL or key.";
+    gateView("gateError"); return;
+  }
+  try{
+    sb = window.supabase.createClient(window.PACKBOYS.url, window.PACKBOYS.key, {
+      auth: {persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}
+    });
+  }catch(e){
+    $("gateErrorMsg").textContent = "Couldn't start up: " + e.message;
+    gateView("gateError"); return;
+  }
+
+  sb.auth.onAuthStateChange(function(evt){
+    if(evt === "SIGNED_OUT") location.reload();
+  });
+
+  var sess = await sb.auth.getSession();
+  var session = sess.data && sess.data.session;
+  if(!session){ gateView("gateSignin"); return; }
+  AUTH_USER = session.user;
+
+  // Row-level security means a non-member simply sees nothing here.
+  var who = await sb.from("members").select("email,name,is_admin");
+  if(who.error){
+    $("gateErrorMsg").textContent = who.error.message +
+      " — if this says the table is missing, the setup script hasn't been run yet.";
+    gateView("gateError"); return;
+  }
+  var roster = who.data || [];
+  if(!roster.length){
+    $("gateDeniedEmail").textContent = AUTH_USER.email || "";
+    gateView("gateDenied"); return;
+  }
+  var mine = roster.filter(function(r){
+    return (r.email||"").toLowerCase() === (AUTH_USER.email||"").toLowerCase(); })[0];
+  IS_ADMIN = !!(mine && mine.is_admin);
+  startApp();
+}
+
+$("rdForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  var code = $("rdCode").value.trim();
+  if(!code) return;
+  $("rdBtn").disabled = true; $("rdBtn").textContent = "Checking\u2026";
+  var r = await sb.rpc("redeem_invite", {p_code: code});
+  $("rdBtn").disabled = false; $("rdBtn").textContent = "Join the crew";
+  if(r.error){ $("rdMsg").textContent = r.error.message; return; }
+  if(r.data === "ok" || r.data === "already_member"){ location.reload(); return; }
+  $("rdMsg").textContent = ({
+    bad_code:  "That code isn't recognised \u2014 check for a typo.",
+    expired:   "That code has expired. Ask for a fresh one.",
+    used_up:   "That code has already been used. Ask for a fresh one.",
+    inactive:  "That code was switched off. Ask for a fresh one.",
+    no_email:  "Couldn't read your account. Sign out and back in."
+  })[r.data] || "That didn't work. Ask for a fresh code.";
+});
+
+$("siForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  var email = $("siEmail").value.trim();
+  if(!email) return;
+  $("siBtn").disabled = true; $("siBtn").textContent = "Sending…";
+  var r = await sb.auth.signInWithOtp({
+    email: email,
+    options: {emailRedirectTo: location.origin + location.pathname}
+  });
+  $("siBtn").disabled = false; $("siBtn").textContent = "Email me a sign-in link";
+  if(r.error){ $("siMsg").textContent = r.error.message; return; }
+  $("gateSentEmail").textContent = email;
+  gateView("gateSent");
+});
+
+document.addEventListener("click", function(e){
+  if(e.target.closest("#signOutBtn") || e.target.closest("[data-signout]")){ sb.auth.signOut(); }
+  if(e.target.closest("[data-tryagain]")){ gateView("gateSignin"); }
+});
+
+boot();
+
+})();
+</script>
+
+</body>
+</html>
