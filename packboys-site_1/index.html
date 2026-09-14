@@ -87,7 +87,12 @@ body.gated{overflow:hidden}
 .gatebox .mark{display:flex; margin-bottom:18px}
 .gatelede{color:var(--text-2); font-size:14.5px; margin:0 0 16px; text-wrap:balance}
 .gatemsg{color:var(--muted); font-size:12.8px; margin:11px 0 0; min-height:1.2em}
-#siForm,#rdForm{display:flex; flex-direction:column; gap:9px}
+#siForm,#rdForm,#otpForm{display:flex; flex-direction:column; gap:9px}
+#otpForm input{
+  text-align:center; font-family:"IBM Plex Mono",monospace; font-size:29px;
+  letter-spacing:.42em; text-indent:.42em; padding:12px 10px; font-weight:600;
+}
+#otpForm .btn{justify-content:center; padding:11px}
 #rdForm input{text-align:center; text-transform:uppercase; letter-spacing:.1em;
   font-family:"IBM Plex Mono",monospace}
 #rdForm .btn{justify-content:center; padding:11px}
@@ -589,17 +594,23 @@ textarea{resize:vertical; min-height:60px; font-family:inherit}
     </div>
 
     <div id="gateSignin" hidden>
-      <p class="gatelede">Louisville TCG restock intel, for the crew. Sign in with the email you were invited on — no password to make up.</p>
+      <p class="gatelede">Louisville TCG restock intel, for the crew. Put in your email and we’ll send a 6-digit code — no password to make up.</p>
       <form id="siForm" autocomplete="on">
         <input type="email" id="siEmail" placeholder="you@example.com" required autocomplete="email">
-        <button class="btn primary" id="siBtn" type="submit">Email me a sign-in link</button>
+        <button class="btn primary" id="siBtn" type="submit">Email me a code</button>
       </form>
       <p class="gatemsg" id="siMsg"></p>
     </div>
 
     <div id="gateSent" hidden>
-      <p class="gatelede">Check <b id="gateSentEmail"></b>. Tap the link in that email and you're in — it opens straight back here.</p>
-      <p class="gatemsg">Nothing after a minute? Check spam, then <button class="linkbtn" data-tryagain>try a different address</button>.</p>
+      <p class="gatelede">We emailed a 6-digit code to <b id="gateSentEmail"></b>. Type it in below.</p>
+      <form id="otpForm" autocomplete="one-time-code">
+        <input type="text" id="otpCode" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+               placeholder="000000" autocomplete="one-time-code" spellcheck="false">
+        <button class="btn primary" id="otpBtn" type="submit">Sign in</button>
+      </form>
+      <p class="gatemsg" id="otpMsg">Check spam if it hasn't landed in a minute.</p>
+      <p class="gatemsg"><button class="linkbtn" id="otpResend">Send another</button> &middot; <button class="linkbtn" data-tryagain>different address</button></p>
     </div>
 
     <div id="gateDenied" hidden>
@@ -643,7 +654,7 @@ textarea{resize:vertical; min-height:60px; font-family:inherit}
   <section id="tab-home">
     <div class="hero">
       <div class="hero-main">
-        <div class="lbl">Today</div>
+        <div class="lbl" id="heroEyebrow">Where things stand</div>
         <h1 id="heroDay">—</h1>
         <p id="heroLine">—</p>
         <div class="btnrow" id="heroActions"></div>
@@ -655,7 +666,7 @@ textarea{resize:vertical; min-height:60px; font-family:inherit}
       <div class="panel-h">
         <h2>Open questions</h2>
         <div class="spacer"></div>
-        <span class="dim">Three claims worth killing or confirming</span>
+        <span class="dim" id="qSummary"></span>
       </div>
       <div class="panel-b"><div class="qgrid" id="questions"></div></div>
     </div>
@@ -666,7 +677,11 @@ textarea{resize:vertical; min-height:60px; font-family:inherit}
         <div class="panel-b"><div class="feed" id="homeFeed"></div></div>
       </div>
       <div class="panel">
-        <div class="panel-h"><h2>Next releases</h2></div>
+        <div class="panel-h">
+          <h2>Next releases</h2>
+          <div class="spacer"></div>
+          <span class="dim" id="homeCalChecked"></span>
+        </div>
         <div class="panel-b"><div class="cal" id="homeCal"></div></div>
       </div>
     </div>
@@ -823,8 +838,14 @@ textarea{resize:vertical; min-height:60px; font-family:inherit}
       </div>
       <div>
         <div class="panel">
-          <div class="panel-h"><h2>Release calendar</h2></div>
-          <div class="panel-b"><div class="cal" id="calendar"></div></div>
+          <div class="panel-h">
+            <h2>Release calendar</h2>
+            <div class="spacer"></div>
+            <span class="dim" id="calChecked"></span>
+          </div>
+          <div class="panel-b"><div class="cal" id="calendar"></div>
+            <p class="dim" style="margin-top:12px">Dates move, especially the ones marked unconfirmed. Check before building a run around one.</p>
+          </div>
         </div>
         <div class="panel" style="margin-top:16px">
           <div class="panel-h"><h2>Field notes</h2></div>
@@ -1010,6 +1031,7 @@ var CHAIN_INTEL = [
   ]}
 ];
 
+var CALENDAR_CHECKED = "13 September 2026";
 var CALENDAR = [
   {date:"2026-09-16", name:"Pokémon — 30th Celebration (main wave)", note:"Elite Trainer Box $49.99 · Poster Collection $14.99 · Tech Sticker Collections $14.99 · ex Boxes $21.99 · Knock Out Collection & 2-pack blister $9.99"},
   {date:"2026-10-02", name:"Pokémon — 30th Celebration Booster Bundles & Mini Tins", note:"Booster Bundle $26.94 · Mini Tins $9.99"},
@@ -1475,12 +1497,29 @@ function renderHome(){
   var stores = {}; visits.forEach(function(v){ stores[v.storeId]=1; });
 
   var todayQ = QUESTIONS.filter(function(q){ return q.dow===dow; })[0];
-  $("heroDay").textContent = DAYS[dow];
-  $("heroLine").textContent = todayQ
-    ? "It's the day for " + todayQ.title.toLowerCase() + ". Whatever you find, log it — a miss today is worth as much as a hit."
-    : "No standing hypothesis for today. Good day to fill in a gap: pick a store with no data and a time slot nobody has covered.";
+  var unlogged = allStores().filter(function(st){ return !stores[st.id]; }).length;
+  var settled = QUESTIONS.filter(function(q){ return questionStats(q).onDay >= 6; }).length;
+
+  if(todayQ){
+    var qs = questionStats(todayQ);
+    $("heroDay").textContent = DAYS[dow] + " is under test";
+    $("heroLine").textContent = todayQ.claim.split(".")[0] + ". " +
+      (qs.onDay === 0
+        ? "Nothing logged on a " + DAYS[dow] + " at those stores yet, so the claim is still just a claim."
+        : qs.onDay + " " + DAYS[dow] + " visit" + (qs.onDay===1?"":"s") + " logged there so far, " +
+          Math.round(qs.good/qs.onDay*100) + "% with stock. Six is about where it starts meaning something.");
+  } else {
+    $("heroDay").textContent = "Nothing claimed for " + DAYS[dow];
+    var sundayN = (statsFor("all").byDay[dow] || {}).n || 0;
+    $("heroLine").textContent = "No report points at " + DAYS[dow] + "s, and " +
+      (sundayN === 0
+        ? "no " + DAYS[dow] + " visits are logged, so the grid has nothing to say either."
+        : "only " + sundayN + " " + DAYS[dow] + " visit" + (sundayN===1?"":"s") + " are logged, which isn't enough to argue with.") +
+      (unlogged ? " " + unlogged + " of " + allStores().length + " stores have never been logged at all." : "");
+  }
 
   var acts = '<button class="btn primary" data-go="log">Log a stop</button>';
+  if(!todayQ && unlogged) acts = '<button class="btn primary" data-go="log">Log a stop</button>';
   if(todayQ){
     var r = state.routes.filter(function(x){ return x.name.indexOf(todayQ.routeName)===0; })[0];
     if(r) acts += '<button class="btn" data-loadroute="'+esc(r.id)+'">Load the '+esc(todayQ.routeName)+' route</button>';
@@ -1502,6 +1541,9 @@ function renderHome(){
       (Object.keys(people).length===1?"person":"people")+' contributing</span></div>'+
     '<div class="stat"><b>'+state.tips.length+'</b><span>local tips on file</span></div>';
 
+  $("qSummary").textContent = settled
+    ? settled + " of " + QUESTIONS.length + " have enough visits to argue about"
+    : "None of these have enough visits yet to mean anything";
   $("questions").innerHTML = QUESTIONS.map(function(q){
     var st = questionStats(q);
     var cls = st.onDay>=6 ? "live" : st.onDay>0 ? "thin" : "";
@@ -1535,6 +1577,7 @@ function renderHome(){
       'The first stop anyone logs shows up here for everyone.</div>';
 
   var today0 = new Date(); today0.setHours(0,0,0,0);
+  var hcc = $("homeCalChecked"); if(hcc) hcc.textContent = "checked " + CALENDAR_CHECKED;
   var upcoming = CALENDAR.filter(function(c){ return new Date(c.date+"T00:00:00") >= today0; }).slice(0,4);
   $("homeCal").innerHTML = (upcoming.length ? upcoming : CALENDAR.slice(-3)).map(function(c){
     var d = new Date(c.date+"T00:00:00");
@@ -1923,6 +1966,7 @@ function renderIntel(){
   }).join("");
 
   var today = new Date(); today.setHours(0,0,0,0);
+  var cc = $("calChecked"); if(cc) cc.textContent = "checked " + CALENDAR_CHECKED;
   $("calendar").innerHTML = CALENDAR.map(function(c){
     var d = new Date(c.date+"T00:00:00");
     var days = Math.round((d-today)/86400000);
@@ -2172,6 +2216,8 @@ var FAQ = [
    "A visit is one thing you saw with your own eyes on one day. A tip is standing knowledge — a truck day, a stocker's name, which shelf the cards live on. Tips sit on the store and on the chain page permanently. Anyone can hit <strong>confirm</strong> on one, which is how you tell a real pattern from something somebody heard once."],
   ["Can I log something from last month?",
    "Yes. Change the date in the log form, and if you don't remember the time, tick <em>I only know the date</em>. It'll count toward the day-of-week totals and the store's record without polluting the time grid."],
+  ["How do I sign in?",
+   "Type your email, and a <strong>6-digit code</strong> lands in your inbox. Type the code in and you're through. No password, and no link to tap \u2014 Gmail on phones greys out links from small senders, which is exactly why we use a code instead. Codes last an hour and work once."],
   ["Who can see what I log?",
    "Everyone with the link. Names come from whatever you typed in the top-right — there's no account, it's stored on your own device. You can delete your own entries; you can't delete anyone else's."],
   ["How do I get a friend in?",
@@ -2665,8 +2711,21 @@ async function startApp(){
   if(!state.me.name) setTimeout(openNameModal, 400);
 }
 
+async function loadReleases(){
+  try{
+    var r = await fetch("releases.json?t=" + Date.now(), {cache:"no-store"});
+    if(!r.ok) return;
+    var j = await r.json();
+    if(j && Array.isArray(j.releases) && j.releases.length){
+      CALENDAR = j.releases;
+      if(j.checked) CALENDAR_CHECKED = j.checked;
+    }
+  }catch(e){ /* keep the built-in list */ }
+}
+
 async function boot(){
   gateView("gateLoading");
+  await loadReleases();
   if(!window.PACKBOYS || !window.PACKBOYS.url || !window.PACKBOYS.key){
     $("gateErrorMsg").textContent = "config.js is missing the project URL or key.";
     gateView("gateError"); return;
@@ -2708,6 +2767,41 @@ async function boot(){
   startApp();
 }
 
+var OTP_EMAIL = "";
+
+async function sendCode(email){
+  var r = await sb.auth.signInWithOtp({
+    email: email,
+    options: {emailRedirectTo: location.origin + location.pathname}
+  });
+  return r.error || null;
+}
+
+$("otpForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  var code = $("otpCode").value.replace(/\D/g, "");
+  if(code.length !== 6){ $("otpMsg").textContent = "That code is six digits."; return; }
+  $("otpBtn").disabled = true; $("otpBtn").textContent = "Checking\u2026";
+  var r = await sb.auth.verifyOtp({email: OTP_EMAIL, token: code, type: "email"});
+  $("otpBtn").disabled = false; $("otpBtn").textContent = "Sign in";
+  if(r.error){
+    $("otpMsg").textContent = /expired|invalid|token/i.test(r.error.message || "")
+      ? "That code didn't work \u2014 codes expire after an hour. Send another."
+      : r.error.message;
+    return;
+  }
+  location.reload();
+});
+
+$("otpResend").addEventListener("click", async function(){
+  if(!OTP_EMAIL) return;
+  this.disabled = true;
+  $("otpMsg").textContent = "Sending another\u2026";
+  var err = await sendCode(OTP_EMAIL);
+  this.disabled = false;
+  $("otpMsg").textContent = err ? err.message : "Sent. Check your inbox, then spam.";
+});
+
 $("rdForm").addEventListener("submit", async function(e){
   e.preventDefault();
   var code = $("rdCode").value.trim();
@@ -2731,14 +2825,18 @@ $("siForm").addEventListener("submit", async function(e){
   var email = $("siEmail").value.trim();
   if(!email) return;
   $("siBtn").disabled = true; $("siBtn").textContent = "Sending…";
-  var r = await sb.auth.signInWithOtp({
-    email: email,
-    options: {emailRedirectTo: location.origin + location.pathname}
-  });
-  $("siBtn").disabled = false; $("siBtn").textContent = "Email me a sign-in link";
-  if(r.error){ $("siMsg").textContent = r.error.message; return; }
+  var err = await sendCode(email);
+  $("siBtn").disabled = false; $("siBtn").textContent = "Email me a code";
+  if(err){
+    $("siMsg").textContent = /rate limit/i.test(err.message || "")
+      ? "Too many emails just now \u2014 wait a minute and try again."
+      : err.message;
+    return;
+  }
+  OTP_EMAIL = email;
   $("gateSentEmail").textContent = email;
   gateView("gateSent");
+  setTimeout(function(){ try{ $("otpCode").focus(); }catch(e){} }, 60);
 });
 
 document.addEventListener("click", function(e){
