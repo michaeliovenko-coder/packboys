@@ -285,6 +285,19 @@ textarea{resize:vertical; min-height:60px; font-family:inherit}
   padding:4px 11px; font-size:12.5px;
 }
 .chip[aria-pressed="true"]{background:var(--accent-wash); border-color:var(--accent); color:var(--accent); font-weight:600}
+.cchip{
+  width:36px; height:36px; padding:0; border-radius:50%; border:2px solid transparent;
+  position:relative; cursor:pointer; transition:transform .1s;
+}
+.cchip:hover{transform:scale(1.08)}
+.cchip[aria-pressed="true"]{border-color:var(--text); box-shadow:0 0 0 2px var(--surface2), 0 0 0 4px var(--text)}
+.cchip[aria-pressed="true"]::after{
+  content:"\2713"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:16px; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,.6);
+}
+.nmpreview{display:flex; align-items:center; gap:10px; margin:2px 0 12px}
+.nmpreview .avatar{width:34px; height:34px; font-size:13px}
+.nmpreview span{font-size:13.5px; color:var(--text-2)}
 
 /* ---------- store list ---------- */
 .storelist{display:flex; flex-direction:column; gap:0; max-height:min(58vh,520px); overflow:auto}
@@ -1060,16 +1073,33 @@ function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").repl
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 
+// Your name and color are saved on your account (Supabase user metadata), so they
+// follow you to any device or browser. localStorage is only a cache for the case
+// where the account has nothing yet (e.g. profiles made before this was added).
 function initMe(){
-  var me = lsGet("me", null) || {};
+  var cached = lsGet("me", null) || {};
+  var meta = (AUTH_USER && AUTH_USER.user_metadata) || {};
+  var name  = meta.pb_name  || cached.name  || MEMBER_NAME || "";
+  var color = meta.pb_color || cached.color || "";
+  if(PALETTE.indexOf(color) === -1) color = PALETTE[Math.floor(Math.random()*PALETTE.length)];
   state.me = {
     key: AUTH_USER ? AUTH_USER.id : null,
     email: AUTH_USER ? AUTH_USER.email : "",
-    name: me.name || "",
-    color: me.color || PALETTE[Math.floor(Math.random()*PALETTE.length)]
+    name: name,
+    color: color
   };
+  // Older profile that only lived on this device: copy it up to the account once.
+  if(!meta.pb_name && name) saveMe();
 }
-function saveMe(){ lsSet("me", {name: state.me.name, color: state.me.color}); }
+function saveMe(){
+  lsSet("me", {name: state.me.name, color: state.me.color});
+  if(!sb || !AUTH_USER) return Promise.resolve();
+  return sb.auth.updateUser({data: {pb_name: state.me.name, pb_color: state.me.color}})
+    .then(function(r){
+      if(r.error){ toast("Couldn't save your profile to your account: " + r.error.message); }
+      else if(r.data && r.data.user){ AUTH_USER = r.data.user; }
+    }).catch(function(){});
+}
 function initials(n){
   n = (n||"?").trim();
   var p = n.split(/\s+/);
@@ -2028,34 +2058,54 @@ function openLogModal(storeId){
 }
 
 function openNameModal(){
-  openModal("Who are you?",
+  var firstTime = !state.me.name;
+  var draftName = state.me.name, draftColor = state.me.color;
+  openModal(firstTime ? "Who are you?" : "Your profile",
+    '<div class="nmpreview">'+avatarHTML(draftName||"?", draftColor)+
+      '<span id="nmPreviewName">'+esc(draftName||"Your name")+'</span></div>'+
     '<div class="field"><label for="nmName">Display name</label>'+
-      '<input type="text" id="nmName" maxlength="24" value="'+esc(state.me.name)+'" placeholder="Mike"></div>'+
+      '<input type="text" id="nmName" maxlength="24" value="'+esc(draftName)+'" placeholder="Mike" autocomplete="nickname"></div>'+
     '<div class="field"><label>Your color</label><div class="chips" id="nmColors">'+
       PALETTE.map(function(c){
-        return '<button class="chip" data-c="'+c+'" aria-pressed="'+(state.me.color===c)+'" '+
-          'style="background:'+c+';border-color:'+c+';width:34px;height:26px;padding:0"><span class="sronly">'+c+'</span></button>';
+        return '<button type="button" class="cchip" data-c="'+c+'" aria-pressed="'+(draftColor===c)+'" '+
+          'style="background:'+c+'" title="'+c+'"><span class="sronly">'+c+'</span></button>';
       }).join("")+'</div></div>'+
-    '<p class="dim">This is how your stops show up to everyone else on this link. It lives on this device — no account needed.</p>',
-    '<button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="nmSave">Save</button>'
+    '<p class="dim">This is how your stops show up to everyone else. It’s saved to your account, so you only set it once — it follows you to any phone or computer you sign in on.</p>',
+    (firstTime ? '' : '<button class="btn ghost" data-close>Cancel</button>')+
+    '<button class="btn primary" id="nmSave">Save</button>'
   );
+  function paintPreview(){
+    var av = document.querySelector(".nmpreview .avatar");
+    if(av){ av.style.background = draftColor; av.textContent = initials(draftName||"?"); }
+    $("nmPreviewName").textContent = draftName || "Your name";
+  }
+  $("nmName").addEventListener("input", function(){
+    draftName = this.value.trim().slice(0,24); paintPreview();
+  });
   $("nmColors").addEventListener("click", function(e){
     var b = e.target.closest("[data-c]"); if(!b) return;
-    state.me.color = b.getAttribute("data-c");
+    draftColor = b.getAttribute("data-c");
     Array.prototype.forEach.call($("nmColors").children, function(c){
       c.setAttribute("aria-pressed", c===b ? "true":"false");
     });
+    paintPreview();
   });
+  $("nmName").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); $("nmSave").click(); } });
   $("nmSave").addEventListener("click", async function(){
     var n = $("nmName").value.trim().slice(0,24);
-    state.me.name = n;
-    saveMe(); closeModal(); renderAll(); pushPresence();
+    if(!n){ $("nmName").focus(); toast("Pick a name first."); return; }
+    var changed = (n !== state.me.name) || (draftColor !== state.me.color);
+    state.me.name = n; state.me.color = draftColor;
+    closeModal(); renderAll(); pushPresence();
+    await saveMe();
+    if(!changed) return;
     // Rename every stop I've already logged, so the feed reads right for everyone.
     var res = await sb.from("visits")
-      .update({user_name: n||"Anonymous", user_color: state.me.color})
+      .update({user_name: n, user_color: state.me.color})
       .eq("user_id", state.me.key);
     if(res.error) toast(dbMsg(res.error)); else refetch("visits");
   });
+  setTimeout(function(){ if(firstTime) $("nmName").focus(); }, 50);
 }
 
 function openAddStopModal(){
@@ -2508,7 +2558,7 @@ function broadcastHit(storeId){
 // ============================================================
 //  Supabase: sign-in, loading, and live updates
 // ============================================================
-var AUTH_USER = null, IS_ADMIN = false;
+var AUTH_USER = null, IS_ADMIN = false, MEMBER_NAME = "";
 
 function gateView(name){
   var shell = document.querySelector(".shell"), top = document.querySelector(".top"),
@@ -2654,6 +2704,7 @@ async function boot(){
   var mine = roster.filter(function(r){
     return (r.email||"").toLowerCase() === (AUTH_USER.email||"").toLowerCase(); })[0];
   IS_ADMIN = !!(mine && mine.is_admin);
+  MEMBER_NAME = (mine && mine.name) ? String(mine.name).trim().slice(0,24) : "";
   startApp();
 }
 
